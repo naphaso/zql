@@ -1,0 +1,15 @@
+install plugin handlersocket soname 'handlersocket.so';
+
+
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX:PATH=/tmp/mysql -DWITH_DEBUG=1 .. 
+make install
+
+
+cp test/*.sh /tmp/mysql/
+
+cd /tmp/mysql
+./install.sh
+./start.sh
+
