@@ -20,6 +20,7 @@
 #include "m_string.h"                           // strlen
 #include "sql_plugin.h"                         // st_plugin_int
 
+#include "ZqlDaemon.h"
 //using namespace zql;
 
 static char *zql_address = 0;
@@ -27,17 +28,17 @@ static char *zql_port = 0;
 static unsigned int zql_threads = 1;
 
 static int daemon_zql_init(void *p) {
-	//std::auto_ptr<ZqlDaemon> ap(new ZqlDaemon());
+	//	std::auto_ptr<ZqlDaemon> ap(new ZqlDaemon());
 	// TODO: create daemon, configure and start listen server
 	st_plugin_int *const plugin = static_cast<st_plugin_int *>(p);
-	plugin->data = NULL;//ap.release();
+	plugin->data = new ZqlDaemon();
 	return 0;
 }
 
 static int daemon_zql_deinit(void *p) {
 	st_plugin_int *const plugin = static_cast<st_plugin_int *>(p);
-	//ZqlDaemon *instance = static_cast<ZqlDaemon>(plugin->data);
-	//delete instance;
+	ZqlDaemon *instance = static_cast<ZqlDaemon*>(plugin->data);
+	delete instance;
 	return 0;
 }
 
