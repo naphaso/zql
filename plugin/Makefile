@@ -1,3 +1,3 @@
 all:
-		g++ -ozql.so zql.cpp ZqlDaemon.cpp -I/home/wolong/repo/mysql-5.6.14 -I/home/wolong/repo/mysql-5.6.14/build/include -I/home/wolong/repo/mysql-5.6.14/sql -I/home/wolong/repo/mysql-5.6.14/include -O0 -ggdb3 -shared -fPIC -fno-exceptions -fno-rtti -DMYSQL_DYNAMIC_PLUGIN -Wno-format-security
+		g++ -I/home/wolong/repo/zeromq-4.0.1/include -lsodium -ozql.so zql.cpp ZqlDaemon.cpp  /home/wolong/repo/zeromq-4.0.1/src/.libs/libzmq.a -I/home/wolong/repo/mysql-5.6.14 -I/home/wolong/repo/mysql-5.6.14/build/include -I/home/wolong/repo/mysql-5.6.14/sql -I/home/wolong/repo/mysql-5.6.14/include -O0 -ggdb3 -shared -fPIC -fno-exceptions -fno-rtti -DMYSQL_DYNAMIC_PLUGIN -Wno-format-security
 		cp zql.so /tmp/mysql/lib/plugin/zql.so

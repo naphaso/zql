@@ -1,22 +1,44 @@
 #include "ZqlDaemon.h"
 
+pthread_handler_t daemonize(void *ptr) {
+	ZqlDaemon *daemon = static_cast<ZqlDaemon *>(ptr);
+	daemon->run();
 
-#include <my_global.h>
-#include <sql_priv.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <mysql_version.h>
-#include <mysql/plugin.h>
-#include <my_dir.h>
-#include "my_pthread.h"                         // pthread_handler_t
-#include "my_sys.h"                             // my_write, my_malloc
-#include "m_string.h"                           // strlen
-#include "sql_plugin.h"                         // st_plugin_int
+	return 0;
+}
 
 ZqlDaemon::ZqlDaemon() {
+	pthread_attr_t attr;
+	pthread_attr_init(&attr);
+	//pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+	
+	if(pthread_create(&_thread, &attr, daemonize, static_cast<void *>(this)) != 0) {
+		fprintf(stderr, "Could not create zql thread: %s\n", strerror(errno));
+		exit(0);
+	}
 
+	pthread_attr_destroy(&attr);
 }
 
 ZqlDaemon::~ZqlDaemon() {
+	void *dummy_retval;
+	pthread_cancel(_thread);
+	pthread_join(_thread, &dummy_retval);
+}
 
+void ZqlDaemon::run() {
+	_context = zmq_ctx_new();
+	_frontend_socket = zmq_socket(_context, ZMQ_ROUTER);
+	_backend_socket = zmq_socket(_context, ZMQ_DEALER);
+
+	zmq_bind(_frontend_socket, "tcp://*:9990");
+	zmq_bind(_backend_socket, "inproc://zql");
+
+	zmq_proxy(_frontend_socket, _backend_socket, NULL);
+	
+	zmq_close(_frontend_socket);
+	zmq_close(_backend_socket);
+
+	zmq_ctx_destroy(_context);
 }
