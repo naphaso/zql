@@ -27,6 +27,12 @@ ZqlDaemon::~ZqlDaemon() {
 	pthread_join(_thread, &dummy_retval);
 }
 
+void *ZqlDaemon::getContext() {
+	return _context;
+}
+
+#define WORKER_COUNT 16
+
 void ZqlDaemon::run() {
 	_context = zmq_ctx_new();
 	_frontend_socket = zmq_socket(_context, ZMQ_ROUTER);
@@ -34,6 +40,11 @@ void ZqlDaemon::run() {
 
 	zmq_bind(_frontend_socket, "tcp://*:9990");
 	zmq_bind(_backend_socket, "inproc://zql");
+
+	Worker *workers[WORKER_COUNT];
+	for(int i = 0; i < WORKER_COUNT; i++) {
+		workers[i] = new Worker(this, i + 1);
+	}
 
 	zmq_proxy(_frontend_socket, _backend_socket, NULL);
 	

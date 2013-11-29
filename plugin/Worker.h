@@ -1,5 +1,5 @@
-#ifndef ZQL_DAEMON_H
-#define ZQL_DAEMON_H
+#ifndef WORKER_H
+#define WORKER_H
 
 #include <my_global.h>
 #include <sql_priv.h>
@@ -15,23 +15,21 @@
 
 #include <zmq.h>
 
-class ZqlDaemon;
+class Worker;
 
-#include "Worker.h"
+#include "ZqlDaemon.h"
 
-class ZqlDaemon {
+class Worker {
 public:
-	ZqlDaemon();
-	~ZqlDaemon();
+	Worker(ZqlDaemon *daemon, int number);
+	~Worker();
 
 	void run();
-
-	void *getContext();
 private:
+	int _number;
 	pthread_t _thread;
-	void *_context;
-	void *_frontend_socket;
-	void *_backend_socket;
+	ZqlDaemon *_daemon;
+	void *_socket;
 };
 
 #endif
