@@ -1,5 +1,7 @@
 #include "Worker.h"
 
+#include "Database.h"
+
 pthread_handler_t start_worker(void *ptr) {
 	Worker *worker = static_cast<Worker *>(ptr);
 	worker->run();

@@ -1,5 +1,5 @@
-#ifndef ZQL_DAEMON_H
-#define ZQL_DAEMON_H
+#ifndef DATABASE_H
+#define DATABASE_H
 
 /*
 #include <my_global.h>
@@ -17,25 +17,23 @@
 
 #include "mysql_include.h"
 
-#include <zmq.h>
+class Database;
 
-class ZqlDaemon;
+// local includes
 
-#include "Worker.h"
-
-class ZqlDaemon {
+class Database {
 public:
-	ZqlDaemon();
-	~ZqlDaemon();
-
-	void run();
-
-	void *getContext();
+	Database();
+	int execute(const char *database, const char *table, bool forWrite, const char *index, int value);
 private:
-	pthread_t _thread;
-	void *_context;
-	void *_frontend_socket;
-	void *_backend_socket;
+	void prepareKeybuf(uchar *key_buf, TABLE *table, KEY &kinfo, int value);
+
+	void lockTables(TABLE *table);
+	void unlockTables();
+
+	void initThread(const void *stack_bottom, volatile int &shutdown_flag);
+	void deinitThread();
+	THD *thd;
 };
 
 #endif

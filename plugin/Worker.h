@@ -1,6 +1,7 @@
 #ifndef WORKER_H
 #define WORKER_H
 
+/*
 #include <my_global.h>
 #include <sql_priv.h>
 #include <stdlib.h>
@@ -12,6 +13,9 @@
 #include "my_sys.h"                             // my_write, my_malloc
 #include "m_string.h"                           // strlen
 #include "sql_plugin.h"                         // st_plugin_int
+*/
+
+#include "mysql_include.h"
 
 #include <zmq.h>
 
