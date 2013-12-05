@@ -33,7 +33,9 @@ static int daemon_zql_init(void *p) {
 	//	std::auto_ptr<ZqlDaemon> ap(new ZqlDaemon());
 	// TODO: create daemon, configure and start listen server
 	st_plugin_int *const plugin = static_cast<st_plugin_int *>(p);
-	plugin->data = new ZqlDaemon();
+	ZqlDaemon *daemon = new ZqlDaemon();
+	plugin->data = daemon;
+	daemon->start();
 	return 0;
 }
 
@@ -71,7 +73,7 @@ static SHOW_VAR daemon_zql_status_variables[] = {
   {NullS, NullS, SHOW_LONG}
 };
 
-mysql_declare_plugin(handlersocket)
+maria_declare_plugin(zql)
 {
   MYSQL_DAEMON_PLUGIN,
   &daemon_zql_plugin,
@@ -86,4 +88,4 @@ mysql_declare_plugin(handlersocket)
   daemon_zql_system_variables,
   0
 }
-mysql_declare_plugin_end;
+maria_declare_plugin_end;

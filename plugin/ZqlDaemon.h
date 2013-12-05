@@ -28,6 +28,7 @@ public:
 	ZqlDaemon();
 	~ZqlDaemon();
 
+	void start();
 	void run();
 
 	void *getContext();

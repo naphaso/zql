@@ -25,14 +25,17 @@ class Database {
 public:
 	Database();
 	int execute(const char *database, const char *table, bool forWrite, const char *index, int value);
+
+	void initThread(void *const stack_bottom, volatile int &shutdown_flag);
+	void deinitThread();
+
 private:
-	void prepareKeybuf(uchar *key_buf, TABLE *table, KEY &kinfo, int value);
+
+	int prepareKeybuf(uchar *key_buf, TABLE *table, KEY &kinfo, int value);
 
 	void lockTables(TABLE *table);
 	void unlockTables();
 
-	void initThread(const void *stack_bottom, volatile int &shutdown_flag);
-	void deinitThread();
 	THD *thd;
 };
 

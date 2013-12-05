@@ -22,6 +22,7 @@
 class Worker;
 
 #include "ZqlDaemon.h"
+#include "Database.h"
 
 class Worker {
 public:
@@ -30,6 +31,8 @@ public:
 
 	void run();
 private:
+	Database *_database;
+
 	int _number;
 	pthread_t _thread;
 	ZqlDaemon *_daemon;

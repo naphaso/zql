@@ -8,6 +8,9 @@ pthread_handler_t daemonize(void *ptr) {
 }
 
 ZqlDaemon::ZqlDaemon() {
+}
+
+void ZqlDaemon::start() {
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
 	//pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
@@ -31,7 +34,7 @@ void *ZqlDaemon::getContext() {
 	return _context;
 }
 
-#define WORKER_COUNT 16
+#define WORKER_COUNT 1
 
 void ZqlDaemon::run() {
 	_context = zmq_ctx_new();

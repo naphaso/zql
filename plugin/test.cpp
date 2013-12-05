@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
 	void *socket = zmq_socket(context, ZMQ_REQ);
 	zmq_connect(socket, "tcp://127.0.0.1:9990");
 	
-	for(int i = 0; i < 1000000; i++) {
+	//	for(int i = 0; i < 1000000; i++) {
 		zmq_send(socket, data, size, 0);
 	
 		zmq_msg_t message;
@@ -26,11 +26,11 @@ int main(int argc, char **argv) {
 
 		zmq_msg_close(&message);
 
-		if(i % 10000 == 0) {
-			printf("request %d\n", i);
-		}
+		//if(i % 10000 == 0) {
+		//	printf("request %d\n", i);
+		//}
 
-	}
+		//}
 
 	zmq_close(socket);
 	zmq_ctx_destroy(context);
