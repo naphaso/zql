@@ -1,8 +1,13 @@
+zql_lib := /root/zeromq-4.0.3
+mysql_src := /root/mariadb-10.0.6
+mysql_deployment := /tmp/maria
+sodium_path := /root/libsodium
+
 all: test module
 
 test:
-		g++ -I/home/wolong/repo/zeromq-4.0.1/include -lsodium -lpthread test.cpp /home/wolong/repo/zeromq-4.0.1/src/.libs/libzmq.a -o test
+		g++ -I$(zql_lib)/include -lrt -lpthread test.cpp $(zql_lib)/src/.libs/libzmq.a $(sodium_path)/src/libsodium/.libs/libsodium.a -o test
 
 module:
-		g++ -I/home/wolong/repo/zeromq-4.0.1/include -lsodium -ozql.so zql.cpp ZqlDaemon.cpp Worker.cpp Database.cpp /home/wolong/repo/zeromq-4.0.1/src/.libs/libzmq.a -I/home/wolong/repo/mysql-5.6.14 -I/home/wolong/repo/mysql-5.6.14/build/include -I/home/wolong/repo/mysql-5.6.14/sql -I/home/wolong/repo/mysql-5.6.14/regex -I/home/wolong/repo/mysql-5.6.14/include -O0 -ggdb3 -shared -fPIC -fno-exceptions -fno-rtti -Wno-format-security
-		cp zql.so /tmp/mysql/lib/plugin/zql.so
+		g++ -I$(zql_lib)/include -O0 -ggdb3 -lrt -ozql.so zql.cpp ZqlDaemon.cpp Worker.cpp Database.cpp $(zql_lib)/src/.libs/libzmq.a $(sodium_path)/src/libsodium/.libs/libsodium.a -I$(mysql_src) -I$(mysql_src)/build/include -I$(mysql_src)/sql -I$(mysql_src)/regex -I$(mysql_src)/include -shared -fPIC -DPIC -fno-exceptions -fno-rtti -Wno-format-security -fabi-version=2 -fno-omit-frame-pointer -fno-strict-aliasing -MD -MP
+		cp zql.so $(mysql_deployment)/lib/plugin/zql.so

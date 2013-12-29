@@ -9,13 +9,18 @@ int Database::execute(const char* databaseName, const char *tableName, bool forW
 	TABLE_LIST tables;
 	TABLE *table = NULL;
 
+	fprintf(stderr, "started execution\n");
 	const thr_lock_type lock_type = forWrite ? TL_WRITE : TL_READ;
 
 	tables.init_one_table(databaseName, strlen(databaseName), tableName, strlen(tableName), tableName, lock_type);
 
+	fprintf(stderr, "init one table ok\n");
+
 	tables.mdl_request.init(MDL_key::TABLE, databaseName, tableName,
       forWrite ? MDL_SHARED_WRITE : MDL_SHARED_READ, MDL_TRANSACTION);
     Open_table_context ot_act(thd, 0);
+
+	fprintf(stderr, "mdl request init ok\n");
 
 	//if (!open_table(thd, &tables, &ot_act)) { // for mysql
 	if (!open_table(thd, &tables, thd->mem_root, &ot_act)) {
@@ -27,14 +32,19 @@ int Database::execute(const char* databaseName, const char *tableName, bool forW
 		return -1;
 	}
 
+	fprintf(stderr, "open table ok\n");
+
 	//statistic_increment(open_tables_count, &LOCK_status);
 	
 	table->reginfo.lock_type = lock_type;
     table->use_all_columns();
+
+	fprintf(stderr, "use all columns ok\n");
 	
 	// TODO: find symbolic index
 	int indexNumber = atoi(index);
 
+	fprintf(stderr, "index number: %d\n", indexNumber);
 	// TODO: specific fields
 	
 	// TODO: other find types
@@ -42,25 +52,37 @@ int Database::execute(const char* databaseName, const char *tableName, bool forW
 
 	lockTables(table);
 
+	fprintf(stderr, "lock tables ok\n");
+
 	KEY& kinfo = table->key_info[indexNumber];
+
+	fprintf(stderr, "hey key info ok\n");
 
 	uchar *const key_buf = new uchar[kinfo.key_length];
 	size_t kplen_sum = 0;
 
 	// START prepare keybuf
-	prepareKeybuf(key_buf, table, kinfo, value);
+	kplen_sum = prepareKeybuf(key_buf, table, kinfo, value);
 	// END prepare keybuf
+	fprintf(stderr, "prepare keybuf ok\n");
 
 	table->read_set = &table->s->all_set;
-	
+
+	fprintf(stderr, "read set ok\n");	
+
 	handler *const hnd = table->file;
 
 	if (!forWrite) {
+		fprintf(stderr, "init for handler...\n");
 		hnd->init_table_handle_for_HANDLER();
+		fprintf(stderr, "init for handler done\n");
 	}
 
+	fprintf(stderr, "start index operations...\n");
 	hnd->ha_index_or_rnd_end();
+	fprintf(stderr, "index or rnd end done\n");
 	hnd->ha_index_init(indexNumber, 1);
+	fprintf(stderr, "index init done\n");
 
 	// start response array
 
@@ -68,8 +90,9 @@ int Database::execute(const char* databaseName, const char *tableName, bool forW
 
 	r = hnd->ha_index_read_map(table->record[0], key_buf, keyPartMap, find_flag);
 
+	fprintf(stderr, "index read map done\n");
+
 	while(true) {
-		r = hnd->ha_index_next_same(table->record[0], key_buf, kplen_sum);
 
 		if(r == 0 /* && filter */  /* && no skip */ ) {
 			// send row
@@ -93,15 +116,24 @@ int Database::execute(const char* databaseName, const char *tableName, bool forW
 		} else {
 			break;
 		}
+                r = hnd->ha_index_next_same(table->record[0], key_buf, kplen_sum);
+
+                fprintf(stderr, "index next same done: %d\n", r);
+
 	}
 
+	fprintf(stderr, "index end started\n");
 	hnd->ha_index_or_rnd_end();
+	fprintf(stderr, "index or rnd end done\n");
 	// send end of array
 
 	// closing table
 	unlockTables();
+	fprintf(stderr, "unlock tables done\n");
 	close_thread_tables(thd);
+	fprintf(stderr, "close tables done\n");
 	thd->mdl_context.release_transactional_locks();
+	fprintf(stderr, "mdl release transactional locks done\n");
 
 	return 0;
 }
@@ -126,14 +158,16 @@ void Database::unlockTables() {
 
 int Database::prepareKeybuf(uchar *key_buf, TABLE *table, KEY &kinfo, int value) {
 	unsigned int kplen_sum = 0;
-	char valueStr[100];
+	char *valueStr = new char[100];
 	const KEY_PART_INFO &keyPartInfo = kinfo.key_part[0]; // only forst keypart
 	keyPartInfo.field->set_notnull(); // or null :)
 
 	sprintf(valueStr, "%d", value);
+	fprintf(stderr, "value = '%s'\n", valueStr);
 	keyPartInfo.field->store(valueStr, strlen(valueStr), &my_charset_bin);
     kplen_sum += keyPartInfo.store_length;
 
+	fprintf(stderr, "kplen_sum: %d\n", kplen_sum);
 	key_copy(key_buf, table->record[0], &kinfo, kplen_sum);
 
 	return kplen_sum;
@@ -145,7 +179,6 @@ void Database::initThread(void *const stack_bottom, volatile int &shutdown_flag)
 	my_thread_init();
 	fprintf(stderr, "2\n"); fflush(stderr);
 	thd = new THD;
-	exit(1);
 	fprintf(stderr, "3\n"); fflush(stderr);
 	thd->thread_stack = (char *)stack_bottom;
 	fprintf(stderr, "4\n"); fflush(stderr);

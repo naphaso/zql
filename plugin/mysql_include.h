@@ -2,8 +2,9 @@
 #define MYSQL_INCLUDE_H
 
 
-#define MYSQL_DYNAMIC_PLUGIN
-#define MYSQL_SERVER 1
+#define MYSQL_DYNAMIC_PLUGIN 1
+#define MYSQL_SERVER 0 
+#define DBUG_OFF
 
 #include <my_pthread.h>
 #include <sql_priv.h>
@@ -24,7 +25,7 @@
 #define clear_current_stmt_binlog_row_based  clear_current_stmt_binlog_format_row
 
 
-#include <global_threads.h>
+//#include <global_threads.h>
 
 #undef min
 #undef max

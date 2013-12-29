@@ -63,7 +63,7 @@ void Worker::run() {
 
 		zmq_msg_close(&message);
 		
-		_database->execute("testdatabase", "testtable", false, 0, 3);
+		_database->execute("testdatabase", "testtable", false, "0", 3);
 
 
 		zmq_send(_socket, "response!", 9, 0); 
