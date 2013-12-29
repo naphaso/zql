@@ -79,13 +79,14 @@ maria_declare_plugin(zql)
   &daemon_zql_plugin,
   "ZQL",
   "undefware inc",
-  "",
+  "ZeroMQ database access",
   PLUGIN_LICENSE_BSD,
   daemon_zql_init,
   daemon_zql_deinit,
   0x0100 /* 1.0 */,
-  daemon_zql_status_variables,
-  daemon_zql_system_variables,
-  0
+  NULL,//daemon_zql_status_variables,
+  NULL,//daemon_zql_system_variables,
+  "1.0",
+  MariaDB_PLUGIN_MATURITY_BETA
 }
 maria_declare_plugin_end;
