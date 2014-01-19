@@ -3,5 +3,5 @@
 [#]*[#]
 plugin/test
 plugin/*.d
-
+zql.xcodeproj/*
 
