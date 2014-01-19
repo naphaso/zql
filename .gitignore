@@ -3,5 +3,7 @@
 [#]*[#]
 plugin/test
 plugin/*.d
+<<<<<<< HEAD
 .idea/
+zql.xcodeproj/*
 
