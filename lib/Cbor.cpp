@@ -394,7 +394,6 @@ void CborReader::run() {
 						state = STATE_TYPE;
 						break;
 					case 4:
-						// TODO: for integers > 2^31
 						onTag(input->getInt());
 						state = STATE_TYPE;
 						break;
@@ -607,7 +606,7 @@ void CborReader::onMap(int size) {
 	printf("map: %d\n", size);
 }
 
-void CborReader::onTag(int tag) {
+void CborReader::onTag(unsigned int tag) {
 	printf("tag: %d\n", tag);
 }
 

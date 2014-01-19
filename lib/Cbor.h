@@ -45,7 +45,7 @@ protected:
 	virtual void onString(std::string &str);
 	virtual void onArray(int size);
 	virtual void onMap(int size);
-	virtual void onTag(int tag);
+	virtual void onTag(unsigned int tag);
 	virtual void onSpecial(int code);
 	virtual void onError(const char *error);
 private:
