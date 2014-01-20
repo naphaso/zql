@@ -32,7 +32,7 @@ public:
 	void initThread(void *const stack_bottom, volatile int &shutdown_flag);
 	void deinitThread();
 
-    bool get(std::string &database, std::string &table, unsigned long long int &pk, std::map<std::string, std::string> result);
+    bool get(std::string &database, std::string &table, unsigned long long int &pk, std::map<std::string, std::string> &result);
 
 private:
 

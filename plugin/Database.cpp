@@ -232,7 +232,7 @@ void Database::deinitThread() {
 	my_thread_end();
 }
 
-bool Database::get(std::string &databaseName, std::string &tableName, unsigned long long int &pk, map<string, string> result) {
+bool Database::get(std::string &databaseName, std::string &tableName, unsigned long long int &pk, map<string, string> &result) {
     int r = 0;
     TABLE_LIST tables;
     TABLE *table = NULL;
