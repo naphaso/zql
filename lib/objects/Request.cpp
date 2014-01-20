@@ -1,7 +1,7 @@
 #include "Request.h"
 #include "Tags.h"
+#include "ObjectParser.h"
 
-#include <cstdio>
 
 
 using namespace std;
@@ -36,16 +36,18 @@ void RequestGet::Serialize(CborWriter &writer) {
 
 
 int main(int argc, char **argv) {
-
-
 	RequestGet get;
 	get.database() = "testdatabase";
 	get.table() = "testtable";
 	get.pk() = 123;
 
+    RequestWrapper wrapper;
+    wrapper.setId(321);
+    wrapper.setRequest(&get);
+
 	CborOutput output(9000);
 	CborWriter writer(output);	
-	get.Serialize(writer);
+	wrapper.Serialize(writer);
 	
 	//fwrite(output.data(), 1, output.size(), stdout);
 
@@ -55,10 +57,20 @@ int main(int argc, char **argv) {
 	unsigned char *data = output.getData();
 	int size = output.getSize();
 
+
 	CborInput input(data, size);
-	CborReader reader(input);
-	reader.run();
+
+    /*
+    CborReader reader(input);
+    CborDebugListener listener;
+    reader.SetListener(listener);
+	reader.Run();
+*/
+    ObjectParser parser;
+    DebugObjectListener objectListener;
+    parser.SetInput(input);
+    parser.SetListener(objectListener);
+    parser.Run();
 
 	return 0;
 }
-

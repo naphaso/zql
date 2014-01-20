@@ -7,6 +7,8 @@
 #define REQUEST_TYPE_INSERT 4
 #define REQUEST_TYPE_DELETE 5
 
+#include "../lib/Cbor.h"
+
 class RequestObject {
 public:
 	RequestObject(void *data, size_t size);

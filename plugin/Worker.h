@@ -37,6 +37,7 @@ private:
 	pthread_t _thread;
 	ZqlDaemon *_daemon;
 	void *_socket;
+    bool _disposed;
 };
 
 #endif

@@ -1,6 +1,7 @@
 #include "Worker.h"
 
 #include "Database.h"
+#include "Cbor.h"
 
 pthread_handler_t start_worker(void *ptr) {
 	Worker *worker = static_cast<Worker *>(ptr);
@@ -17,6 +18,7 @@ Worker::Worker(ZqlDaemon *daemon, int number) {
 	_daemon = daemon;
 	_number = number;
 	_database = new Database();
+    _disposed = false;
 
 	if(pthread_create(&_thread, &attr, start_worker, static_cast<void *>(this)) != 0) {
 		fprintf(stderr, "Could not create worker thread: %s\n", strerror(errno));
@@ -53,20 +55,19 @@ void Worker::run() {
 	
 	zmq_connect(_socket, "inproc://zql");
 
-	while(1) {
+	while(!_disposed) {
 		zmq_msg_t message;
 		zmq_msg_init(&message);
 		zmq_msg_recv(&message, _socket, 0);
 
-		fprintf(stderr, "worker %d received message: %.*s\n",			\
-					_number, zmq_msg_size(&message), zmq_msg_data(&message));
+        fprintf(stderr, "worker %d received message", _number);
+
+        CborInput input(zmq_msg_data(&message), zmq_msg_size(&message));
+
 
 		zmq_msg_close(&message);
-		
-		_database->execute("testdatabase", "testtable", false, "0", 3);
-
-
-		zmq_send(_socket, "response!", 9, 0); 
+		//_database->execute("testdatabase", "testtable", false, "0", 3);
+		//zmq_send(_socket, "response!", 9, 0);
 	}
 
 	zmq_close(_socket);

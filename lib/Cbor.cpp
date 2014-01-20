@@ -244,7 +244,7 @@ void CborReader::Run() {
 						break;
 					case 4:
 						// TODO: for integers > 2^31
-						listenr->OnInteger(input->getInt());
+						listener->OnInteger(input->getInt());
 						state = STATE_TYPE;
 						break;
 					case 8:
@@ -262,7 +262,7 @@ void CborReader::Run() {
 						state = STATE_TYPE;
 						break;
 					case 2:
-						onInteger(-(int)input->getShort());
+						listener->OnInteger(-(int)input->getShort());
 						state = STATE_TYPE;
 						break;
 					case 4:
@@ -412,7 +412,7 @@ void CborReader::Run() {
 						state = STATE_TYPE;
 						break;
 					case 2:
-						listner->OnSpecial(input->getShort());
+						listener->OnSpecial(input->getShort());
 						state = STATE_TYPE;
 						break;
 					case 4:
@@ -592,7 +592,7 @@ void CborDebugListener::OnBytes(unsigned char *data, int size) {
 }
 
 void CborDebugListener::OnString(string &str) {
-	printf("string: '%.*s'\n", str.size(), str.c_str());
+	printf("string: '%.*s'\n", (int)str.size(), str.c_str());
 }
 
 void CborDebugListener::OnArray(int size) {

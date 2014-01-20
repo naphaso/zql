@@ -12,7 +12,24 @@ private:
 	unsigned int id;
 	Request *request;
 public:
-	virtual void Serialize(CborWriter &writer);
+
+    Request *getRequest() const {
+        return request;
+    }
+
+    void setRequest(Request *request) {
+        RequestWrapper::request = request;
+    }
+
+    unsigned int getId() const {
+        return id;
+    }
+
+    void setId(unsigned int id) {
+        RequestWrapper::id = id;
+    }
+
+    virtual void Serialize(CborWriter &writer);
 };
 
 class Request : public CborSerializable {

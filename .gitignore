@@ -8,4 +8,5 @@ plugin/*.d
 zql.xcodeproj/*
 references/
 .DS_Store
+lib/test
 
