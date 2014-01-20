@@ -18,6 +18,7 @@
 #include "mysql_include.h"
 
 #include <map>
+#include <string>
 
 class Database;
 
