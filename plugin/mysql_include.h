@@ -18,9 +18,9 @@
 #include <sql_base.h>
 // FIXME FIXME FIXME
 #define safeFree(X) my_free(X)
-#define pthread_cond_timedwait  mysql_cond_timedwait
-#define  pthread_mutex_lock  mysql_mutex_lock
-#define  pthread_mutex_unlock  mysql_mutex_unlock
+//#define pthread_cond_timedwait  mysql_cond_timedwait
+//#define  pthread_mutex_lock  mysql_mutex_lock
+//#define  pthread_mutex_unlock  mysql_mutex_unlock
 #define current_stmt_binlog_row_based  is_current_stmt_binlog_format_row
 #define clear_current_stmt_binlog_row_based  clear_current_stmt_binlog_format_row
 
