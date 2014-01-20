@@ -32,4 +32,19 @@ protected:
 	//	virtual void OnResponseGet(unsigned int requestId, ResponseGet &response);
 };
 
+class ObjectListener {
+public:
+	virtual void OnRequestGet(unsigned int requestId, RequestGet &request) = 0;
+	// TODO: other requests
+	virtual void OnError(const char *error);
+};
+
+class ObjectFactory : public CborReader {
+public:
+	ObjectFactory(CborInput &input);
+public:
+	
+}
+
+
 #endif
