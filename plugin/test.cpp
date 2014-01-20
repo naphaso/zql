@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <zmq.h>
+#include "Request.h"
+#include "my_net.h"
+#include "ObjectParser.h"
 
 int main(int argc, char **argv) {
 	if(argc != 2) {
@@ -14,7 +17,36 @@ int main(int argc, char **argv) {
 	void *context = zmq_ctx_new();
 	void *socket = zmq_socket(context, ZMQ_REQ);
 	zmq_connect(socket, "tcp://127.0.0.1:9990");
-	
+
+    RequestGet requestGet;
+    RequestWrapper wrapper;
+
+    requestGet.database() = "testdatabase";
+    requestGet.table() = "testtable";
+    requestGet.pk() = 3;
+
+    wrapper.setId(123);
+    wrapper.setRequest(&requestGet);
+
+    CborOutput output(10000);
+    CborWriter writer(output);
+    wrapper.Serialize(writer);
+
+    zmq_send(socket, output.getData(), output.getSize(), 0);
+
+    zmq_msg_t message;
+    zmq_msg_init(&message);
+    zmq_msg_recv(&message, socket, 0);
+
+    CborInput input(zmq_msg_data(&message), zmq_msg_size(&message));
+    ObjectParser parser;
+    DebugObjectListener listener;
+    parser.SetInput(input);
+    parser.SetListener(listener);
+
+    parser.Run();
+
+    /*
 	//	for(int i = 0; i < 1000000; i++) {
 		zmq_send(socket, data, size, 0);
 	
@@ -31,7 +63,7 @@ int main(int argc, char **argv) {
 		//}
 
 		//}
-
+*/
 	zmq_close(socket);
 	zmq_ctx_destroy(context);
 	return 0;
