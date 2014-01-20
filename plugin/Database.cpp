@@ -197,13 +197,13 @@ void Database::initThread(void *const stack_bottom, volatile int &shutdown_flag)
 	fprintf(stderr, "8\n"); fflush(stderr);
 
 	// atomically increment integer
-	pthread_mutex_lock(&LOCK_thread_count);
+	mysql_mutex_lock(&LOCK_thread_count);
 	thd->thread_id = thread_id++;
 	// add_global_thread(thd); // for mysql
 	threads.append(thd);
     ++thread_count;
 
-	pthread_mutex_unlock(&LOCK_thread_count);
+	mysql_mutex_unlock(&LOCK_thread_count);
 	// end
 
 	fprintf(stderr, "9\n"); fflush(stderr);
