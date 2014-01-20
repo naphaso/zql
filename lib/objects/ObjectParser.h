@@ -3,6 +3,7 @@
 
 #include "../Cbor.h"
 #include "Request.h"
+#include "Response.h"
 
 typedef enum {
 	OBJECT_PARSER_STATE_INIT,
@@ -16,7 +17,15 @@ typedef enum {
     OBJECT_PARSER_STATE_REQUEST_GET_TABLE,
     OBJECT_PARSER_STATE_REQUEST_GET_PK,
 
+    OBJECT_PARSER_STATE_RESPONSE_WRAPPER_ARRAY,
+    OBJECT_PARSER_STATE_RESPONSE_WRAPPER_ID,
+    OBJECT_PARSER_STATE_RESPONSE_WRAPPER_BODY,
 
+    OBJECT_PARSER_STATE_RESPONSE_GET_EMPTY_MAP,
+
+    OBJECT_PARSER_STATE_RESPONSE_GET_OK_MAP,
+    OBJECT_PARSER_STATE_RESPONSE_GET_OK_MAP_KEY,
+    OBJECT_PARSER_STATE_RESPONSE_GET_OK_MAP_VALUE
 } ObjectParserState;
 
 
@@ -24,7 +33,8 @@ class ObjectListener {
 public:
     virtual void OnRequestGet(unsigned int requestId, RequestGet *request) = 0;
     //	virtual void OnResponseGet(unsigned int requestId, ResponseGet &response);
-    // TODO: other requests
+    virtual void OnResponseGetEmpty(unsigned int requestId) = 0;
+    virtual void OnResponseGetOk(unsigned int requestId, ResponseGetOk *response) = 0;
     virtual void OnError(const char *error) = 0;
 };
 
@@ -32,7 +42,8 @@ class DebugObjectListener : public ObjectListener {
 
 public:
     virtual void OnRequestGet(unsigned int requestId, RequestGet *request);
-
+    virtual void OnResponseGetEmpty(unsigned int requestId);
+    virtual void OnResponseGetOk(unsigned int requestId, ResponseGetOk *response);
     virtual void OnError(const char *error);
 };
 
@@ -43,6 +54,8 @@ public:
     void SetInput(CborInput &input);
     void SetListener(ObjectListener &listener);
 private:
+    std::string currentKey;
+    int elements;
     ObjectListener *listener;
     CborInput *input;
 	ObjectParserState state;

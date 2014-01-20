@@ -2,6 +2,10 @@
 
 #include "Database.h"
 #include "Cbor.h"
+#include "ObjectParser.h"
+#include "log.h"
+
+using namespace std;
 
 pthread_handler_t start_worker(void *ptr) {
 	Worker *worker = static_cast<Worker *>(ptr);
@@ -63,7 +67,10 @@ void Worker::run() {
         fprintf(stderr, "worker %d received message", _number);
 
         CborInput input(zmq_msg_data(&message), zmq_msg_size(&message));
-
+        ObjectParser parser;
+        parser.SetInput(input);
+        parser.SetListener(*this);
+        parser.Run();
 
 		zmq_msg_close(&message);
 		//_database->execute("testdatabase", "testtable", false, "0", 3);
@@ -71,4 +78,34 @@ void Worker::run() {
 	}
 
 	zmq_close(_socket);
+}
+
+void Worker::OnRequestGet(unsigned int requestId, RequestGet *request) {
+    ResponseWrapper wrapper;
+    wrapper.setId(requestId);
+    ResponseGetOk responseOk;
+    ResponseGetEmpty responseEmpty;
+    if(_database->get(request->database(), request->table(), request->pk(), responseOk.GetValues())) {
+        wrapper.setResponse(&responseOk);
+    } else {
+        wrapper.setResponse(&responseEmpty);
+    }
+
+    CborOutput output(9000);
+    CborWriter writer(output);
+    wrapper.Serialize(writer);
+
+    zmq_send(_socket, output.getData(), (size_t) output.getSize(), 0);
+}
+
+void Worker::OnResponseGetEmpty(unsigned int requestId) {
+    loggerf("%s", "invalid request: response empty");
+}
+
+void Worker::OnResponseGetOk(unsigned int requestId, ResponseGetOk *response) {
+    loggerf("%s", "invalid request: response ok");
+}
+
+void Worker::OnError(const char *error) {
+    loggerf("error occured: %s", error);
 }

@@ -23,13 +23,23 @@ class Worker;
 
 #include "ZqlDaemon.h"
 #include "Database.h"
+#include "ObjectParser.h"
 
-class Worker {
+class Worker : public ObjectListener {
 public:
 	Worker(ZqlDaemon *daemon, int number);
 	~Worker();
 
-	void run();
+
+    virtual void OnRequestGet(unsigned int requestId, RequestGet *request);
+
+    virtual void OnResponseGetEmpty(unsigned int requestId);
+
+    virtual void OnResponseGetOk(unsigned int requestId, ResponseGetOk *response);
+
+    virtual void OnError(const char *error);
+
+    void run();
 private:
 	Database *_database;
 

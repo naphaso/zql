@@ -1,4 +1,7 @@
+#include <string>
 #include "Database.h"
+
+using namespace std;
 
 Database::Database() {
 
@@ -227,4 +230,142 @@ void Database::deinitThread() {
 	// end
 
 	my_thread_end();
+}
+
+bool Database::get(std::string &databaseName, std::string &tableName, unsigned long long int &pk, map<string, string> result) {
+    int r = 0;
+    TABLE_LIST tables;
+    TABLE *table = NULL;
+
+    //fprintf(stderr, "started execution\n");
+    const thr_lock_type lock_type = TL_READ;
+
+    tables.init_one_table(databaseName.c_str(), databaseName.size(), tableName.c_str(), tableName.size(), tableName.c_str(), lock_type);
+
+    fprintf(stderr, "init one table ok\n");
+
+    tables.mdl_request.init(MDL_key::TABLE, databaseName.c_str(), tableName.c_str(), MDL_SHARED_READ, MDL_TRANSACTION);
+    Open_table_context ot_act(thd, 0);
+
+    fprintf(stderr, "mdl request init ok\n");
+
+    //if (!open_table(thd, &tables, &ot_act)) { // for mysql
+    if (!open_table(thd, &tables, thd->mem_root, &ot_act)) {
+        table = tables.table;
+    }
+
+    if(table == NULL) {
+        fprintf(stderr, "failed to open table\n");
+        return false;
+    }
+
+    fprintf(stderr, "open table ok\n");
+
+    //statistic_increment(open_tables_count, &LOCK_status);
+
+    table->reginfo.lock_type = lock_type;
+    table->use_all_columns();
+
+    fprintf(stderr, "use all columns ok\n");
+
+    // TODO: find symbolic index
+
+    // TODO: specific fields
+
+    // TODO: other find types
+    ha_rkey_function find_flag = HA_READ_KEY_EXACT;
+
+    lockTables(table);
+
+    fprintf(stderr, "lock tables ok\n");
+
+    KEY& kinfo = table->key_info[0];
+
+    fprintf(stderr, "hey key info ok\n");
+
+    uchar *const key_buf = new uchar[kinfo.key_length];
+    size_t kplen_sum = 0;
+
+    // START prepare keybuf
+    kplen_sum = (size_t) prepareKeybuf(key_buf, table, kinfo, (int) pk);
+    // END prepare keybuf
+    fprintf(stderr, "prepare keybuf ok\n");
+
+    table->read_set = &table->s->all_set;
+
+    fprintf(stderr, "read set ok\n");
+
+    handler *const hnd = table->file;
+
+    fprintf(stderr, "init for handler...\n");
+    hnd->init_table_handle_for_HANDLER();
+    fprintf(stderr, "init for handler done\n");
+
+    fprintf(stderr, "start index operations...\n");
+    hnd->ha_index_or_rnd_end();
+    fprintf(stderr, "index or rnd end done\n");
+    hnd->ha_index_init(0, 1);
+    fprintf(stderr, "index init done\n");
+
+    // start response array
+
+    const key_part_map keyPartMap = (1U << 1) - 1; // use all key parts
+
+    r = hnd->ha_index_read_map(table->record[0], key_buf, keyPartMap, find_flag);
+
+    fprintf(stderr, "index read map done\n");
+
+    bool found = false;
+
+    while(true) {
+
+        if(r == 0 /* && filter */  /* && no skip */ ) {
+            // send row
+            Field **fld = 0;
+            for (fld = table->field; *fld; ++fld) {
+                fprintf(stderr, "field name: %s\n", (*fld)->field_name);
+                if((*fld)->is_null()) {
+                    result[(*fld)->field_name] = "NULL";
+                    fprintf(stderr, "field value is null\n");
+                } else {
+                    char rwpstr_buf[1024]; // TODO: field size
+                    String rwpstr(rwpstr_buf, sizeof(rwpstr_buf), &my_charset_bin);
+                    (*fld)->val_str(&rwpstr, &rwpstr);
+
+                    result[(*fld)->field_name] = string(rwpstr.ptr(), rwpstr.length());
+
+                    fprintf(stderr, "field value is '%.*s'\n", rwpstr.length(), rwpstr.ptr());
+                }
+                //DBG_FLD(fprintf(stderr, "f %s\n", (*fld)->field_name));
+                //string_ref fn((*fld)->field_name, strlen((*fld)->field_name));
+                //if (fn == fldnms[i]) {
+                //	break;
+                //}
+            }
+
+            found = true;
+
+        } else {
+            break;
+        }
+        r = hnd->ha_index_next_same(table->record[0], key_buf, kplen_sum);
+
+        fprintf(stderr, "index next same done: %d\n", r);
+
+    }
+
+    fprintf(stderr, "index end started\n");
+    hnd->ha_index_or_rnd_end();
+    fprintf(stderr, "index or rnd end done\n");
+    // send end of array
+
+    // closing table
+    unlockTables();
+    fprintf(stderr, "unlock tables done\n");
+    close_thread_tables(thd);
+    fprintf(stderr, "close tables done\n");
+    thd->mdl_context.release_transactional_locks();
+    fprintf(stderr, "mdl release transactional locks done\n");
+
+    return found;
 }

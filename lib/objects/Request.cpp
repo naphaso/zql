@@ -33,9 +33,10 @@ void RequestGet::Serialize(CborWriter &writer) {
 	writer.writeString(_table);
 	writer.writeInt(_pk);
 }
-
+/*
 
 int main(int argc, char **argv) {
+
 	RequestGet get;
 	get.database() = "testdatabase";
 	get.table() = "testtable";
@@ -44,6 +45,15 @@ int main(int argc, char **argv) {
     RequestWrapper wrapper;
     wrapper.setId(321);
     wrapper.setRequest(&get);
+
+    ResponseGetOk response;
+    response.SetValue("key1", "value1");
+    response.SetValue("key2", "value2");
+    response.SetValue("key3", "value3");
+
+    ResponseWrapper wrapper;
+    wrapper.setId(321123);
+    wrapper.setResponse(&response);
 
 	CborOutput output(9000);
 	CborWriter writer(output);	
@@ -60,12 +70,14 @@ int main(int argc, char **argv) {
 
 	CborInput input(data, size);
 
-    /*
+
+
+
     CborReader reader(input);
     CborDebugListener listener;
     reader.SetListener(listener);
 	reader.Run();
-*/
+
     ObjectParser parser;
     DebugObjectListener objectListener;
     parser.SetInput(input);
@@ -74,3 +86,4 @@ int main(int argc, char **argv) {
 
 	return 0;
 }
+*/
