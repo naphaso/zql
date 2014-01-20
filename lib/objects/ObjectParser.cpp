@@ -9,6 +9,7 @@ ObjectParser::ObjectParser() {
 void ObjectParser::Run() {
     CborReader reader(*input);
     reader.SetListener(*this);
+    state = OBJECT_PARSER_STATE_INIT;
     reader.Run();
 }
 
