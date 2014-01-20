@@ -6,7 +6,7 @@ ObjectParser::ObjectParser(CborInput &input) : CborReader(input) {
 }
 
 void ObjectParser::Run() {
-	run();
+	//Run();
 }
 
 void ObjectParser::onInteger(int value) {
@@ -52,6 +52,6 @@ void ObjectParser::onErrorOccured(const char *error) {
 
 
 int main(int argc, char **argv) {
-	logger("hello world!");
+
 	return 0;
 }
