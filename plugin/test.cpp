@@ -2,7 +2,6 @@
 #include <string.h>
 #include <zmq.h>
 #include "Request.h"
-#include "my_net.h"
 #include "ObjectParser.h"
 
 int main(int argc, char **argv) {
@@ -38,13 +37,16 @@ int main(int argc, char **argv) {
     zmq_msg_init(&message);
     zmq_msg_recv(&message, socket, 0);
 
+    fwrite(zmq_msg_data(&message), 1, zmq_msg_size(&message), stdout);
+
+    /*
     CborInput input(zmq_msg_data(&message), zmq_msg_size(&message));
     ObjectParser parser;
     DebugObjectListener listener;
     parser.SetInput(input);
     parser.SetListener(listener);
 
-    parser.Run();
+    parser.Run();*/
 
     /*
 	//	for(int i = 0; i < 1000000; i++) {
