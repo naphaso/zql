@@ -6,4 +6,6 @@ plugin/*.d
 <<<<<<< HEAD
 .idea/
 zql.xcodeproj/*
+references/
+.DS_Store
 
