@@ -9,4 +9,5 @@ zql.xcodeproj/*
 references/
 .DS_Store
 lib/test
+hs/
 

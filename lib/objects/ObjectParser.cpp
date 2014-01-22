@@ -1,5 +1,6 @@
 #include "ObjectParser.h"
 #include "log.h"
+#include "Tags.h"
 
 using namespace std;
 
@@ -50,6 +51,24 @@ void ObjectParser::OnString(std::string &str) {
         } else {
             state = OBJECT_PARSER_STATE_RESPONSE_GET_OK_MAP_KEY;
         }
+    } else if(state == OBJECT_PARSER_STATE_REQUEST_ADD_DATABASE) {
+        ((RequestAdd*)currentObject)->database() = str;
+        state = OBJECT_PARSER_STATE_REQUEST_ADD_TABLE;
+    } else if(state == OBJECT_PARSER_STATE_REQUEST_ADD_TABLE) {
+        ((RequestAdd*)currentObject)->database() = str;
+        state = OBJECT_PARSER_STATE_REQUEST_ADD_ROW_MAP;
+    } else if(state == OBJECT_PARSER_STATE_REQUEST_ADD_ROW_MAP_KEY) {
+        currentKey = str;
+        state = OBJECT_PARSER_STATE_REQUEST_ADD_ROW_MAP_VALUE;
+    } else if(state == OBJECT_PARSER_STATE_REQUEST_ADD_ROW_MAP_VALUE) {
+        ((RequestAdd*)currentObject)->row()[currentKey] = str;
+        elements--;
+        if(elements == 0) {
+            listener->OnRequestAdd(currentRequestId, (RequestAdd*)currentObject);
+            state = OBJECT_PARSER_STATE_INIT;
+        } else {
+            state = OBJECT_PARSER_STATE_REQUEST_ADD_ROW_MAP_KEY;
+        }
     } else listener->OnError("unknown string");
 }
 
@@ -66,6 +85,10 @@ void ObjectParser::OnArray(int size) {
         if(size == 2) {
             state = OBJECT_PARSER_STATE_RESPONSE_WRAPPER_ID;
         } else listener->OnError("unknown wrapper size");
+    } else if(state == OBJECT_PARSER_STATE_REQUEST_ADD_ARRAY) {
+        if(size == 3) {
+            state = OBJECT_PARSER_STATE_REQUEST_ADD_DATABASE;
+        } else listener->OnError("unknown wrapper size");
     } else listener->OnError("unknown array");
 }
 
@@ -78,6 +101,9 @@ void ObjectParser::OnMap(int size) {
         elements = size;
         currentObject = new ResponseGetOk();
         state = OBJECT_PARSER_STATE_RESPONSE_GET_OK_MAP_KEY;
+    } else if(state == OBJECT_PARSER_STATE_REQUEST_ADD_ROW_MAP) {
+        elements = size;
+        state = OBJECT_PARSER_STATE_REQUEST_ADD_ROW_MAP_KEY;
     } else listener->OnError("invalid map");
 }
 
@@ -92,6 +118,9 @@ void ObjectParser::OnTag(unsigned int tag) {
         if(tag == 1100) {
             state = OBJECT_PARSER_STATE_REQUEST_GET_ARRAY;
             currentObject = new RequestGet();
+        } else if(tag == TAG_REQUEST_ADD) {
+            state = OBJECT_PARSER_STATE_REQUEST_ADD_ARRAY;
+            currentObject = new RequestAdd();
         } else listener->OnError("unknown tag");
     } else if(state == OBJECT_PARSER_STATE_RESPONSE_WRAPPER_BODY) {
         if(tag == 2101) { // response get empty
@@ -109,8 +138,6 @@ void ObjectParser::OnSpecial(int code) {
 void ObjectParser::OnError(const char *error) {
     listener->OnError(error);
 }
-
-
 
 void ObjectParser::SetInput(CborInput &input) {
     this->input = &input;
@@ -135,9 +162,17 @@ void DebugObjectListener::OnResponseGetEmpty(unsigned int requestId) {
 }
 
 void DebugObjectListener::OnResponseGetOk(unsigned int requestId, ResponseGetOk *response) {
-    loggerf("response  get ok %u", requestId);
+    loggerf("response get ok %u", requestId);
     for(map<string, string>::iterator it = response->GetValues().begin(); it != response->GetValues().end(); ++it) {
         loggerf("key '%s' value '%s'", it->first.c_str(), it->second.c_str());
     }
     logger("end response");
+}
+
+void DebugObjectListener::OnRequestAdd(unsigned int requestId, RequestAdd *request) {
+    loggerf("request add %u, database %s, table %s", requestId, request->database().c_str(), request->table().c_str());
+    for(map<string, string>::iterator it = request->row().begin(); it != request->row().end(); ++it) {
+        loggerf("key '%s', value '%s'", it->first.c_str(), it->second.c_str());
+    }
+    logger("end request");
 }

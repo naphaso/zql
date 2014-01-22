@@ -33,10 +33,10 @@ void RequestGet::Serialize(CborWriter &writer) {
 	writer.writeString(_table);
 	writer.writeInt(_pk);
 }
-/*
+
 
 int main(int argc, char **argv) {
-
+/*
 	RequestGet get;
 	get.database() = "testdatabase";
 	get.table() = "testtable";
@@ -54,8 +54,26 @@ int main(int argc, char **argv) {
     ResponseWrapper wrapper;
     wrapper.setId(321123);
     wrapper.setResponse(&response);
+*/
 
-	CborOutput output(9000);
+    RequestAdd request;
+    request.database() = "testdatabase";
+    request.table() = "testtable";
+    request.row()["col1"] = "val1";
+    request.row()["col2"] = "val2";
+    request.row()["col3"] = "val3";
+    request.row()["col4"] = "val4";
+    request.row()["col5"] = "val5";
+
+
+
+    RequestWrapper wrapper;
+    wrapper.setId(321);
+    wrapper.setRequest(&request);
+
+
+
+    CborOutput output(9000);
 	CborWriter writer(output);	
 	wrapper.Serialize(writer);
 	
@@ -71,12 +89,13 @@ int main(int argc, char **argv) {
 	CborInput input(data, size);
 
 
-
+/*
 
     CborReader reader(input);
     CborDebugListener listener;
     reader.SetListener(listener);
 	reader.Run();
+	*/
 
     ObjectParser parser;
     DebugObjectListener objectListener;
@@ -86,4 +105,29 @@ int main(int argc, char **argv) {
 
 	return 0;
 }
-*/
+
+
+void RequestAdd::Serialize(CborWriter &writer) {
+    writer.writeTag(TAG_REQUEST_ADD);
+    writer.writeArray(3);
+    writer.writeString(_database);
+    writer.writeString(_table);
+    writer.writeMap(_row.size());
+
+    for(map<string, string>::iterator it = _row.begin(); it != _row.end(); ++it) {
+        writer.writeString(it->first);
+        writer.writeString(it->second);
+    }
+}
+
+std::string &RequestAdd::database() {
+    return _database;
+}
+
+std::string &RequestAdd::table() {
+    return _table;
+}
+
+std::map<std::string, std::string> &RequestAdd::row() {
+    return _row;
+}
