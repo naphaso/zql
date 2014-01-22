@@ -1,5 +1,6 @@
 #include <string>
 #include "Database.h"
+#include "log.h"
 
 using namespace std;
 
@@ -153,7 +154,8 @@ void Database::lockTables(TABLE *table) {
 
 void Database::unlockTables() {
 	// TODO: check relock and errors
-	//bool suc = (trans_commit_stmt(thd) == 0);
+	bool suc = (trans_commit_stmt(thd) == 0);
+    loggerf("commit result: %s", suc ? "true" : "false");
 	mysql_unlock_tables(thd, thd->lock);
 	thd->lock = 0;
 	// statistic_increment(unlock_tables_count, &LOCK_status);
@@ -431,6 +433,8 @@ bool Database::add(std::string &databaseName, std::string &tableName, std::map<s
     r = hnd->ha_write_row(buf);
     const ulonglong insert_id = table->file->insert_id_for_cur_row;
     table->next_number_field = 0;
+
+    unlockTables();
 
     return r == 0;
 }
