@@ -34,9 +34,9 @@ void RequestGet::Serialize(CborWriter &writer) {
 	writer.writeInt(_pk);
 }
 
-/*
-int main(int argc, char **argv) {
 
+int mainTest(int argc, char **argv) {
+/*
 	RequestGet get;
 	get.database() = "testdatabase";
 	get.table() = "testtable";
@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
     wrapper.setId(321123);
     wrapper.setResponse(&response);
 
-
+*/
     RequestAdd request;
     request.database() = "testdatabase";
     request.table() = "testtable";
@@ -90,12 +90,12 @@ int main(int argc, char **argv) {
 
 
 
-
+/*
     CborReader reader(input);
     CborDebugListener listener;
     reader.SetListener(listener);
 	reader.Run();
-
+*/
 
     ObjectParser parser;
     DebugObjectListener objectListener;
@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
 
 	return 0;
 }
-*/
+
 
 
 void RequestAdd::Serialize(CborWriter &writer) {

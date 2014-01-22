@@ -55,7 +55,7 @@ void ObjectParser::OnString(std::string &str) {
         ((RequestAdd*)currentObject)->database() = str;
         state = OBJECT_PARSER_STATE_REQUEST_ADD_TABLE;
     } else if(state == OBJECT_PARSER_STATE_REQUEST_ADD_TABLE) {
-        ((RequestAdd*)currentObject)->database() = str;
+        ((RequestAdd*)currentObject)->table() = str;
         state = OBJECT_PARSER_STATE_REQUEST_ADD_ROW_MAP;
     } else if(state == OBJECT_PARSER_STATE_REQUEST_ADD_ROW_MAP_KEY) {
         currentKey = str;
