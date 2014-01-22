@@ -114,7 +114,7 @@ void Worker::OnRequestAdd(unsigned int requestId, RequestAdd *request) {
     ResponseWrapper wrapper;
     wrapper.setId(requestId);
 
-    if(_database->add(request->database(), request->table(), request->row()) {
+    if(_database->add(request->database(), request->table(), request->row())) {
         //wrapper.setResponse();
     }
 
