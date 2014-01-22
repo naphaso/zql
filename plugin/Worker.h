@@ -37,6 +37,9 @@ public:
 
     virtual void OnResponseGetOk(unsigned int requestId, ResponseGetOk *response);
 
+
+    virtual void OnRequestAdd(unsigned int requestId, RequestAdd *request);
+
     virtual void OnError(const char *error);
 
     void run();

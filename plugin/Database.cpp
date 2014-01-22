@@ -369,3 +369,68 @@ bool Database::get(std::string &databaseName, std::string &tableName, unsigned l
 
     return found;
 }
+
+bool Database::add(std::string &databaseName, std::string &tableName, std::map<std::string, std::string> &row) {
+    int r = 0;
+    TABLE_LIST tables;
+    TABLE *table = NULL;
+
+    fprintf(stderr, "started execution\n");
+    const thr_lock_type lock_type = TL_WRITE;
+
+    tables.init_one_table(databaseName.c_str(), databaseName.size(), tableName.c_str(), tableName.size(), tableName.c_str(), lock_type);
+
+    fprintf(stderr, "init one table ok\n");
+
+    tables.mdl_request.init(MDL_key::TABLE, databaseName.c_str(), tableName.c_str(), MDL_SHARED_WRITE, MDL_TRANSACTION);
+    Open_table_context ot_act(thd, 0);
+
+    fprintf(stderr, "mdl request init ok\n");
+
+    //if (!open_table(thd, &tables, &ot_act)) { // for mysql
+    if (!open_table(thd, &tables, thd->mem_root, &ot_act)) {
+        table = tables.table;
+    }
+
+    if(table == NULL) {
+        fprintf(stderr, "failed to open table\n");
+        return -1;
+    }
+
+    fprintf(stderr, "open table ok\n");
+
+    //statistic_increment(open_tables_count, &LOCK_status);
+
+    table->reginfo.lock_type = lock_type;
+    table->use_all_columns();
+
+    fprintf(stderr, "use all columns ok\n");
+
+    lockTables(table);
+
+    fprintf(stderr, "lock tables ok\n");
+
+    handler *const hnd = table->file;
+    uchar *const buf = table->record[0];
+    empty_record(table);
+
+    memset(buf, 0, table->s->null_bytes);
+
+    Field **fld;
+    for (fld = table->field; *fld; ++fld) {
+        fprintf(stderr, "field name: %s\n", (*fld)->field_name);
+        if(row.find((*fld)->field_name) == row.end()) {
+            (*fld)->set_null();
+        } else {
+            string &value = row[(*fld)->field_name];
+            (*fld)->store(value.c_str(), value.size(), &my_charset_bin);
+        }
+    }
+
+    table->next_number_field = table->found_next_number_field;
+    r = hnd->ha_write_row(buf);
+    const ulonglong insert_id = table->file->insert_id_for_cur_row;
+    table->next_number_field = 0;
+
+    return r == 0;
+}

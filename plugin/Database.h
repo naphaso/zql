@@ -33,7 +33,7 @@ public:
 	void deinitThread();
 
     bool get(std::string &database, std::string &table, unsigned long long int &pk, std::map<std::string, std::string> &result);
-
+    bool add(std::string &database, std::string &table, std::map<std::string, std::string> &row);
 private:
 
 	int prepareKeybuf(uchar *key_buf, TABLE *table, KEY &kinfo, int value);

@@ -109,3 +109,20 @@ void Worker::OnResponseGetOk(unsigned int requestId, ResponseGetOk *response) {
 void Worker::OnError(const char *error) {
     loggerf("error occured: %s", error);
 }
+
+void Worker::OnRequestAdd(unsigned int requestId, RequestAdd *request) {
+    ResponseWrapper wrapper;
+    wrapper.setId(requestId);
+
+    if(_database->add(request->database(), request->table(), request->row()) {
+        //wrapper.setResponse();
+    }
+
+    /*
+    CborOutput output(9000);
+    CborWriter writer(output);
+    wrapper.Serialize(writer);
+
+    zmq_send(_socket, output.getData(), (size_t) output.getSize(), 0);
+    */
+}
