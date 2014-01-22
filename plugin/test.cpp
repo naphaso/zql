@@ -5,27 +5,32 @@
 #include "ObjectParser.h"
 
 int main(int argc, char **argv) {
-	if(argc != 2) {
-		printf("usage: test [data]\n");
-		return 1;
-	}
-
-	char *data = argv[1];
-	int size = strlen(data);
 
 	void *context = zmq_ctx_new();
 	void *socket = zmq_socket(context, ZMQ_REQ);
 	zmq_connect(socket, "tcp://127.0.0.1:9990");
 
-    RequestGet requestGet;
+    /*
+    RequestGet request;
     RequestWrapper wrapper;
 
-    requestGet.database() = "testdatabase";
-    requestGet.table() = "testtable";
-    requestGet.pk() = 3;
+    request.database() = "testdatabase";
+    request.table() = "testtable";
+    request.pk() = 3;
+    */
 
+
+
+    RequestAdd request;
+    request.database() = argv[1];
+    request.table() = argv[2];
+    request.row()[argv[3]] = argv[4];
+    request.row()[argv[5]] = argv[6];
+
+
+    RequestWrapper wrapper;
     wrapper.setId(123);
-    wrapper.setRequest(&requestGet);
+    wrapper.setRequest(&request);
 
     CborOutput output(10000);
     CborWriter writer(output);
