@@ -125,4 +125,7 @@ void Worker::OnRequestAdd(unsigned int requestId, RequestAdd *request) {
 
     zmq_send(_socket, output.getData(), (size_t) output.getSize(), 0);
     */
+
+    const string response = "hello";
+    zmq_send(_socket, response.c_str(), response.size(), 0);
 }
