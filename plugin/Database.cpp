@@ -375,7 +375,7 @@ bool Database::add(std::string &databaseName, std::string &tableName, std::map<s
     TABLE_LIST tables;
     TABLE *table = NULL;
 
-    fprintf(stderr, "started execution\n");
+    fprintf(stderr, "started execution, opening table %s in database %s\n", tableName.c_str(), databaseName.c_str());
     const thr_lock_type lock_type = TL_WRITE;
 
     tables.init_one_table(databaseName.c_str(), databaseName.size(), tableName.c_str(), tableName.size(), tableName.c_str(), lock_type);
