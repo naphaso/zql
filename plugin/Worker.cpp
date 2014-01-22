@@ -114,6 +114,12 @@ void Worker::OnRequestAdd(unsigned int requestId, RequestAdd *request) {
     ResponseWrapper wrapper;
     wrapper.setId(requestId);
 
+    loggerf("request add %u, database %s, table %s", requestId, request->database().c_str(), request->table().c_str());
+    for(map<string, string>::iterator it = request->row().begin(); it != request->row().end(); ++it) {
+        loggerf("key '%s', value '%s'", it->first.c_str(), it->second.c_str());
+    }
+    logger("end request");
+
     if(_database->add(request->database(), request->table(), request->row())) {
         //wrapper.setResponse();
     }
