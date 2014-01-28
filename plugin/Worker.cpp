@@ -233,7 +233,7 @@ void Worker::OnRequestAddContinue(unsigned int requestId, RequestAddContinue *re
         if(_database->add(traverse->requestAdd()->database(), traverse->requestAdd()->table(), traverse->requestAdd()->row())) {
 
         }
-        
+
         BTreeTraverseHolder::instance()->removeTraverse(requestId);
         wrapper.setResponse(&responseAddOk);
     } else { // equals
