@@ -25,11 +25,25 @@ void ObjectParser::OnInteger(int value) {
     } else if(state == OBJECT_PARSER_STATE_RESPONSE_WRAPPER_ID) {
         currentRequestId = (unsigned int) value; // TODO: fix type cast
         state = OBJECT_PARSER_STATE_RESPONSE_WRAPPER_BODY;
+    } else if(state == OBJECT_PARSER_STATE_RESPONSE_ADD_TRAVERSE_INIT_REQUEST_ID) {
+        ((ResponseAddTraverse *)currentObject)->initRequestId() = (unsigned int)value;
+        state = OBJECT_PARSER_STATE_RESPONSE_ADD_TRAVERSE_CIPHERTEXT;
+    } else if(state == OBJECT_PARSER_STATE_REQUEST_ADD_CONTINUE_INIT_REQUEST_ID) {
+        ((RequestAddContinue*)currentObject)->initRequestId() = (unsigned int) value;
+        state = OBJECT_PARSER_STATE_REQUEST_ADD_CONTINUE_COMPARE_RESULT;
+    } else if(state == OBJECT_PARSER_STATE_REQUEST_ADD_CONTINUE_COMPARE_RESULT) {
+        ((RequestAddContinue*)currentObject)->compareResult() = value;
+        listener->OnRequestAddContinue(currentRequestId, (RequestAddContinue *)currentObject);
+        state = OBJECT_PARSER_STATE_INIT;
     } else listener->OnError("unknown integer");
 }
 
 void ObjectParser::OnBytes(unsigned char *data, int size) {
-    listener->OnError("unknown bytes");
+    if(state == OBJECT_PARSER_STATE_RESPONSE_ADD_TRAVERSE_CIPHERTEXT) {
+        ((ResponseAddTraverse*)currentObject)->ciphertext() = new Ciphertext(data, (unsigned int)size);
+        listener->OnResponseAddTraverse(currentRequestId, (ResponseAddTraverse *) currentObject);
+        state = OBJECT_PARSER_STATE_INIT;
+    } else listener->OnError("unknown bytes");
 }
 
 void ObjectParser::OnString(std::string &str) {
@@ -89,6 +103,14 @@ void ObjectParser::OnArray(int size) {
         if(size == 3) {
             state = OBJECT_PARSER_STATE_REQUEST_ADD_DATABASE;
         } else listener->OnError("unknown wrapper size");
+    } else if(state == OBJECT_PARSER_STATE_RESPONSE_ADD_TRAVERSE_ARRAY) {
+        if(size == 2) {
+            state = OBJECT_PARSER_STATE_RESPONSE_ADD_TRAVERSE_INIT_REQUEST_ID;
+        } else listener->OnError("unknown array size");
+    } else if(state == OBJECT_PARSER_STATE_REQUEST_ADD_CONTINUE_ARRAY) {
+        if(size == 2) {
+            state = OBJECT_PARSER_STATE_REQUEST_ADD_CONTINUE_INIT_REQUEST_ID;
+        } else listener->OnError("unknown array size");
     } else listener->OnError("unknown array");
 }
 
@@ -96,6 +118,7 @@ void ObjectParser::OnMap(int size) {
     if(state == OBJECT_PARSER_STATE_RESPONSE_GET_EMPTY_MAP) {
         if(size == 0) {
             listener->OnResponseGetEmpty(currentRequestId);
+            state = OBJECT_PARSER_STATE_INIT;
         } else listener->OnError("invalid map size");
     } else if(state == OBJECT_PARSER_STATE_RESPONSE_GET_OK_MAP) {
         elements = size;
@@ -104,6 +127,11 @@ void ObjectParser::OnMap(int size) {
     } else if(state == OBJECT_PARSER_STATE_REQUEST_ADD_ROW_MAP) {
         elements = size;
         state = OBJECT_PARSER_STATE_REQUEST_ADD_ROW_MAP_KEY;
+    } else if(state == OBJECT_PARSER_STATE_RESPONSE_ADD_OK_MAP) {
+        if(size == 0) {
+            listener->OnResponseAddOk(currentRequestId);
+            state = OBJECT_PARSER_STATE_INIT;
+        } else listener->OnError("invalid map size");
     } else listener->OnError("invalid map");
 }
 
@@ -121,12 +149,20 @@ void ObjectParser::OnTag(unsigned int tag) {
         } else if(tag == TAG_REQUEST_ADD) {
             state = OBJECT_PARSER_STATE_REQUEST_ADD_ARRAY;
             currentObject = new RequestAdd();
-        } else listener->OnError("unknown tag");
+        } else if(tag == TAG_REQUEST_ADD_CONTINUE) {
+            state = OBJECT_PARSER_STATE_REQUEST_ADD_CONTINUE_ARRAY;
+            currentObject = new RequestAddContinue();
+        } listener->OnError("unknown tag");
     } else if(state == OBJECT_PARSER_STATE_RESPONSE_WRAPPER_BODY) {
         if(tag == 2101) { // response get empty
             state = OBJECT_PARSER_STATE_RESPONSE_GET_EMPTY_MAP;
         } else if(tag == 2100) { // response get ok
             state = OBJECT_PARSER_STATE_RESPONSE_GET_OK_MAP;
+        } else if(tag == TAG_RESPONSE_ADD_OK) {
+            state = OBJECT_PARSER_STATE_RESPONSE_ADD_OK_MAP;
+        } else if(tag == TAG_RESPONSE_ADD_TRAVERSE) {
+            state = OBJECT_PARSER_STATE_RESPONSE_ADD_TRAVERSE_ARRAY;
+            currentObject = new ResponseAddTraverse();
         } else listener->OnError("unknown tag");
     } else listener->OnError("unknown tag");
 }
@@ -167,6 +203,7 @@ void DebugObjectListener::OnResponseGetOk(unsigned int requestId, ResponseGetOk 
         loggerf("key '%s' value '%s'", it->first.c_str(), it->second.c_str());
     }
     logger("end response");
+    delete response;
 }
 
 void DebugObjectListener::OnRequestAdd(unsigned int requestId, RequestAdd *request) {
@@ -175,4 +212,19 @@ void DebugObjectListener::OnRequestAdd(unsigned int requestId, RequestAdd *reque
         loggerf("key '%s', value '%s'", it->first.c_str(), it->second.c_str());
     }
     logger("end request");
+    delete request;
+}
+
+void DebugObjectListener::OnResponseAddOk(unsigned int requestId) {
+    loggerf("response add ok: %u", requestId);
+}
+
+void DebugObjectListener::OnResponseAddTraverse(unsigned int requestId, ResponseAddTraverse *response) {
+    loggerf("response add traverse: request id %u, init request id %u, ciphertext size: %u", requestId, response->initRequestId(), response->ciphertext()->size());
+    delete response;
+}
+
+void DebugObjectListener::OnRequestAddContinue(unsigned int requestId, RequestAddContinue *request) {
+    loggerf("request add continue: request id %u, init request id %u, compare result %d", requestId, request->initRequestId(), request->compareResult());
+    delete request;
 }

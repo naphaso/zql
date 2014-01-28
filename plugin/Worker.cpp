@@ -4,6 +4,7 @@
 #include "Cbor.h"
 #include "ObjectParser.h"
 #include "log.h"
+#include "BTree.h"
 
 using namespace std;
 
@@ -110,28 +111,139 @@ void Worker::OnError(const char *error) {
     loggerf("error occured: %s", error);
 }
 
+bool hasEnding(std::string const &fullString, std::string const &ending) {
+    if (fullString.length() >= ending.length()) {
+        return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
+    } else {
+        return false;
+    }
+}
+
+string formatPath(unsigned long long path) {
+    char buf[25];
+    sprintf(buf, "%llu", path);
+    return string(buf);
+}
+
 void Worker::OnRequestAdd(unsigned int requestId, RequestAdd *request) {
     ResponseWrapper wrapper;
     wrapper.setId(requestId);
 
+
+
+    /*
     loggerf("request add %u, database %s, table %s", requestId, request->database().c_str(), request->table().c_str());
     for(map<string, string>::iterator it = request->row().begin(); it != request->row().end(); ++it) {
         loggerf("key '%s', value '%s'", it->first.c_str(), it->second.c_str());
     }
     logger("end request");
+*/
 
-    if(_database->add(request->database(), request->table(), request->row())) {
-        //wrapper.setResponse();
+    bool is_ope = false;
+    string opeField;
+    string opeValue;
+    for(map<string, string>::iterator it = request->row().begin(); it != request->row().end(); ++it) {
+        if(hasEnding(it->first, "_ope")) {
+            is_ope = true;
+            opeField = it->first;
+            opeValue = it->second;
+            break;
+        }
     }
 
-    /*
+    ResponseAddOk responseAddOk;
+    ResponseAddTraverse responseAddTraverse;
+
+    if(!is_ope) {
+        if(_database->add(request->database(), request->table(), request->row())) {
+        }
+
+        wrapper.setResponse(&responseAddOk);
+    } else {
+        BTreeNode *tree = BTreeForest::instance()->getTree(request->database(), request->table());
+        Ciphertext *ciphertext = new Ciphertext((unsigned char *) opeValue.c_str(), opeValue.size());
+        if(tree == NULL) {
+
+            BTreeForest::instance()->createTree(request->database(), request->table(), ciphertext);
+
+            request->row()[opeField] = formatPath(9223372036854775808ull); // 1 << 63
+
+            if(_database->add(request->database(), request->table(), request->row())) {
+
+            }
+
+            wrapper.setResponse(&responseAddOk);
+        } else {
+            BTreeTraverseHolder::instance()->createTraverse(requestId, tree, ciphertext)->requestAdd() = request;
+
+            responseAddTraverse.initRequestId() = requestId;
+            responseAddTraverse.ciphertext() = ciphertext;
+            wrapper.setResponse(&responseAddTraverse);
+        }
+    }
+
+
     CborOutput output(9000);
     CborWriter writer(output);
     wrapper.Serialize(writer);
 
     zmq_send(_socket, output.getData(), (size_t) output.getSize(), 0);
-    */
 
-    const string response = "hello";
-    zmq_send(_socket, response.c_str(), response.size(), 0);
+}
+
+
+void Worker::OnResponseAddOk(unsigned int requestId) {
+    loggerf("unknown response on worker: %u", requestId);
+}
+
+void Worker::OnResponseAddTraverse(unsigned int requestId, ResponseAddTraverse *response) {
+    loggerf("unknown response on worker: %u", requestId);
+    delete response;
+}
+
+void Worker::OnRequestAddContinue(unsigned int requestId, RequestAddContinue *request) {
+    ResponseWrapper wrapper;
+    wrapper.setId(requestId);
+
+    ResponseAddOk responseAddOk;
+    ResponseAddTraverse responseAddTraverse;
+
+    BTreeTraverse *traverse = BTreeTraverseHolder::instance()->getTraverse(request->initRequestId());
+    if(traverse == NULL) {
+        // some actions;
+    }
+
+    int result;
+    if(request->compareResult() == -1) {
+        result = (int)traverse->goToLeft();
+    } else if(request->compareResult() == 1) {
+        result = (int)traverse->goToRight();
+    } else {
+        // equals, add to database, increase counter
+
+        logger("equals element, ignore");
+        result = 2;
+    }
+
+    if(result == 1) { // step
+        responseAddTraverse.initRequestId() = request->initRequestId();
+        responseAddTraverse.ciphertext() = traverse->value();
+        wrapper.setResponse(&responseAddTraverse);
+    } else if(result == 0) { // end
+        if(_database->add(traverse->requestAdd()->database(), traverse->requestAdd()->table(), traverse->requestAdd()->row())) {
+
+        }
+        
+        BTreeTraverseHolder::instance()->removeTraverse(requestId);
+        wrapper.setResponse(&responseAddOk);
+    } else { // equals
+        wrapper.setResponse(&responseAddOk);
+    }
+
+
+    CborOutput output(9000);
+    CborWriter writer(output);
+    wrapper.Serialize(writer);
+
+    zmq_send(_socket, output.getData(), (size_t) output.getSize(), 0);
 }

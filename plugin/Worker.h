@@ -30,15 +30,17 @@ public:
 	Worker(ZqlDaemon *daemon, int number);
 	~Worker();
 
-
     virtual void OnRequestGet(unsigned int requestId, RequestGet *request);
-
     virtual void OnResponseGetEmpty(unsigned int requestId);
-
     virtual void OnResponseGetOk(unsigned int requestId, ResponseGetOk *response);
-
-
     virtual void OnRequestAdd(unsigned int requestId, RequestAdd *request);
+
+
+    virtual void OnResponseAddOk(unsigned int requestId);
+
+    virtual void OnResponseAddTraverse(unsigned int requestId, ResponseAddTraverse *response);
+
+    virtual void OnRequestAddContinue(unsigned int requestId, RequestAddContinue *request);
 
     virtual void OnError(const char *error);
 

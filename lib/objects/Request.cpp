@@ -132,3 +132,10 @@ std::string &RequestAdd::table() {
 std::map<std::string, std::string> &RequestAdd::row() {
     return _row;
 }
+
+void RequestAddContinue::Serialize(CborWriter &writer) {
+    writer.writeTag(TAG_REQUEST_ADD_CONTINUE);
+    writer.writeArray(2);
+    writer.writeInt(_initRequestId);
+    writer.writeInt(_compareResult);
+}

@@ -64,5 +64,17 @@ public:
     std::map<std::string, std::string> &row();
 };
 
+class RequestAddContinue : public Request {
+private:
+    unsigned int _initRequestId;
+    int _compareResult;
+public:
+    RequestAddContinue() {};
+    RequestAddContinue(unsigned int initRequestId, int compareResult) : _initRequestId(initRequestId), _compareResult(compareResult) {}
+    virtual void Serialize(CborWriter &writer);
+
+    unsigned int &initRequestId() { return _initRequestId; }
+    int &compareResult() { return _compareResult; }
+};
 
 #endif

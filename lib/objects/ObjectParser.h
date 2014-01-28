@@ -32,8 +32,17 @@ typedef enum {
     OBJECT_PARSER_STATE_REQUEST_ADD_TABLE,
     OBJECT_PARSER_STATE_REQUEST_ADD_ROW_MAP,
     OBJECT_PARSER_STATE_REQUEST_ADD_ROW_MAP_KEY,
-    OBJECT_PARSER_STATE_REQUEST_ADD_ROW_MAP_VALUE
+    OBJECT_PARSER_STATE_REQUEST_ADD_ROW_MAP_VALUE,
 
+    OBJECT_PARSER_STATE_RESPONSE_ADD_OK_MAP,
+
+    OBJECT_PARSER_STATE_RESPONSE_ADD_TRAVERSE_ARRAY,
+    OBJECT_PARSER_STATE_RESPONSE_ADD_TRAVERSE_INIT_REQUEST_ID,
+    OBJECT_PARSER_STATE_RESPONSE_ADD_TRAVERSE_CIPHERTEXT,
+
+    OBJECT_PARSER_STATE_REQUEST_ADD_CONTINUE_ARRAY,
+    OBJECT_PARSER_STATE_REQUEST_ADD_CONTINUE_INIT_REQUEST_ID,
+    OBJECT_PARSER_STATE_REQUEST_ADD_CONTINUE_COMPARE_RESULT
 } ObjectParserState;
 
 
@@ -43,8 +52,12 @@ public:
     //	virtual void OnResponseGet(unsigned int requestId, ResponseGet &response);
     virtual void OnResponseGetEmpty(unsigned int requestId) = 0;
     virtual void OnResponseGetOk(unsigned int requestId, ResponseGetOk *response) = 0;
-    virtual void OnError(const char *error) = 0;
     virtual void OnRequestAdd(unsigned int requestId, RequestAdd *request) = 0;
+    virtual void OnResponseAddOk(unsigned int requestId) = 0;
+    virtual void OnResponseAddTraverse(unsigned int requestId, ResponseAddTraverse *response) = 0;
+    virtual void OnRequestAddContinue(unsigned int requestId, RequestAddContinue *request) = 0;
+
+    virtual void OnError(const char *error) = 0;
 };
 
 class DebugObjectListener : public ObjectListener {
@@ -54,6 +67,12 @@ public:
     virtual void OnResponseGetEmpty(unsigned int requestId);
     virtual void OnResponseGetOk(unsigned int requestId, ResponseGetOk *response);
     virtual void OnRequestAdd(unsigned int requestId, RequestAdd *request);
+    virtual void OnResponseAddOk(unsigned int requestId);
+    virtual void OnResponseAddTraverse(unsigned int requestId, ResponseAddTraverse *response);
+
+
+    virtual void OnRequestAddContinue(unsigned int requestId, RequestAddContinue *request);
+
     virtual void OnError(const char *error);
 };
 

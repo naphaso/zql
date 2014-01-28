@@ -5,6 +5,7 @@
 
 #include <map>
 #include "Cbor.h"
+#include "BTree.h"
 
 #ifndef __Response_H_
 #define __Response_H_
@@ -57,6 +58,26 @@ public:
     virtual void Serialize(CborWriter &writer);
 };
 
+
+class ResponseAddOk : public Response {
+public:
+    virtual void Serialize(CborWriter &writer);
+};
+
+class ResponseAddTraverse : public Response {
+private:
+    unsigned int _initRequestId;
+    Ciphertext *_ciphertext;
+public:
+    ResponseAddTraverse();
+    ResponseAddTraverse(unsigned int initRequestId, Ciphertext *ciphertext) : _initRequestId(initRequestId), _ciphertext(ciphertext) {}
+    virtual void Serialize(CborWriter &writer);
+
+    unsigned int &initRequestId() { return _initRequestId; }
+    Ciphertext *&ciphertext() { return _ciphertext; }
+
+
+};
 
 
 #endif //__Response_H_

@@ -39,3 +39,19 @@ void ResponseGetEmpty::Serialize(CborWriter &writer) {
 std::map<std::string, std::string> &ResponseGetOk::GetValues() {
     return values;
 }
+
+void ResponseAddOk::Serialize(CborWriter &writer) {
+    writer.writeTag(TAG_RESPONSE_ADD_OK);
+    writer.writeMap(0);
+}
+
+void ResponseAddTraverse::Serialize(CborWriter &writer) {
+    writer.writeTag(TAG_RESPONSE_ADD_TRAVERSE);
+    writer.writeArray(2);
+    writer.writeInt(_initRequestId);
+    writer.writeBytes(_ciphertext->data(), _ciphertext->size());
+}
+
+ResponseAddTraverse::ResponseAddTraverse() {
+
+}
