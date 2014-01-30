@@ -181,10 +181,11 @@ void Worker::OnRequestAdd(unsigned int requestId, RequestAdd *request) {
         } else {
             logger("tree exists, starting tree traverse");
 
-            BTreeTraverseHolder::instance()->createTraverse(requestId, tree, ciphertext)->requestAdd() = request;
+            BTreeTraverse *traverse = BTreeTraverseHolder::instance()->createTraverse(requestId, tree, ciphertext);
+            traverse->requestAdd() = request;
 
             responseAddTraverse.initRequestId() = requestId;
-            responseAddTraverse.ciphertext() = ciphertext;
+            responseAddTraverse.ciphertext() = traverse->value(); //ciphertext;
             wrapper.setResponse(&responseAddTraverse);
         }
     }
