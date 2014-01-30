@@ -211,21 +211,28 @@ void Worker::OnResponseAddTraverse(unsigned int requestId, ResponseAddTraverse *
 }
 
 void Worker::OnRequestAddContinue(unsigned int requestId, RequestAddContinue *request) {
+    logger("add continue request start processing...");
+
     ResponseWrapper wrapper;
     wrapper.setId(requestId);
+
+    logger("wrapper created");
 
     ResponseAddOk responseAddOk;
     ResponseAddTraverse responseAddTraverse;
 
     BTreeTraverse *traverse = BTreeTraverseHolder::instance()->getTraverse(request->initRequestId());
     if(traverse == NULL) {
+        logger("traverse not found... need send error to client");
         // some actions;
     }
 
     int result;
     if(request->compareResult() == -1) {
+        logger("compare result: -1, go to left...");
         result = (int)traverse->goToLeft();
     } else if(request->compareResult() == 1) {
+        logger("compare result: 1, go to right...");
         result = (int)traverse->goToRight();
     } else {
         // equals, add to database, increase counter
@@ -235,13 +242,17 @@ void Worker::OnRequestAddContinue(unsigned int requestId, RequestAddContinue *re
     }
 
     if(result == 1) { // step
+        logger("result = 1, step in depth...");
         responseAddTraverse.initRequestId() = request->initRequestId();
         responseAddTraverse.ciphertext() = traverse->value();
         wrapper.setResponse(&responseAddTraverse);
     } else if(result == 0) { // end
+        logger("tree traverse completed, add row to table...");
         if(_database->add(traverse->requestAdd()->database(), traverse->requestAdd()->table(), traverse->requestAdd()->row())) {
 
         }
+
+        logger("removing traverse...");
 
         BTreeTraverseHolder::instance()->removeTraverse(requestId);
         wrapper.setResponse(&responseAddOk);
@@ -249,10 +260,14 @@ void Worker::OnRequestAddContinue(unsigned int requestId, RequestAddContinue *re
         wrapper.setResponse(&responseAddOk);
     }
 
+    logger("serializing response...");
 
-    CborOutput output(9000);
+    CborOutput output(10000);
     CborWriter writer(output);
     wrapper.Serialize(writer);
 
+    loggerf("sending response to client size = %d...", output.getSize());
     zmq_send(_socket, output.getData(), (size_t) output.getSize(), 0);
+
+    logger("request add continue processing completed successfully done");
 }

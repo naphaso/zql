@@ -61,7 +61,7 @@ public:
         zmq_msg_init(&message);
         zmq_msg_recv(&message, socket, 0);
 
-	printf("received response\n");
+	printf("received response with size: %lu\n", zmq_msg_size(&message));
 
         CborInput input(zmq_msg_data(&message), zmq_msg_size(&message));
         ObjectParser parser;
