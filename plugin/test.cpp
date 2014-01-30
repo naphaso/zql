@@ -358,16 +358,52 @@ public:
     }
 };
 
-void *client_thread(void *data) {
-    struct timespec t;
-    t.tv_sec = 10;
-    t.tv_nsec = 0;
-    nanosleep(&t, NULL);
+void send_request(int id, const string &data) {
+    char buf[32];
+    snprintf(buf, 32, "%d", id);
 
     map<string, string> row;
-    row["id"] = "1001";
-    row["data_ope"] = "hello";
+    row["id"] = id;
+    row["data_ope"] = buf;
+
     add_executor(new InsertExecutor(new DebugInsertResultListener(), "testdatabase", "testtable2", row));
+}
+
+void *client_thread(void *data) {
+    struct timespec t;
+    t.tv_sec = 2;
+    t.tv_nsec = 0;
+
+    nanosleep(&t, NULL);
+    send_request(1, "f9f5c68d8acf07a911ab0b468e663adc");
+
+    nanosleep(&t, NULL);
+    send_request(2, "e6da1b55d13e112dd4bcb018f083860d");
+
+    nanosleep(&t, NULL);
+    send_request(3, "8854e436fef3feb984a3e8137512ae47");
+
+    nanosleep(&t, NULL);
+    send_request(4, "cb49370b3a24c0a15958d513aeb435e4");
+
+    nanosleep(&t, NULL);
+    send_request(5, "152a39b37eefc687edf8db069fae5795");
+
+    nanosleep(&t, NULL);
+    send_request(6, "7fba1ac807795d8660223d070663bf0e");
+
+    nanosleep(&t, NULL);
+    send_request(7, "79a8b3add824da62da4536674cb3ffb6");
+
+    nanosleep(&t, NULL);
+    send_request(8, "3a4fabf474c4c77be4c6bdd2367869f5");
+
+    nanosleep(&t, NULL);
+    send_request(9, "d1c58b1ff228ee535072a6aff4f757fd");
+
+    nanosleep(&t, NULL);
+    send_request(10, "3c1a122b061b1dfab5db35118c25eeb0");
+
     return NULL;
 }
 
