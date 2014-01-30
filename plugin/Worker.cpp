@@ -248,7 +248,20 @@ void Worker::OnRequestAddContinue(unsigned int requestId, RequestAddContinue *re
         wrapper.setResponse(&responseAddTraverse);
     } else if(result == 0) { // end
         logger("tree traverse completed, add row to table...");
-        if(_database->add(traverse->requestAdd()->database(), traverse->requestAdd()->table(), traverse->requestAdd()->row())) {
+
+        string opeFieldName;
+        map<string, string> &row = traverse->requestAdd()->row();
+        for(map<string, string>::iterator it = row.begin(); it != row.end(); ++it) {
+            if(hasEnding(it->first, "_ope")) {
+                opeFieldName = it->first;
+            }
+        }
+
+        char buf[100];
+        snprintf(buf, 100, "%llu", traverse->path());
+        row[opeFieldName] = buf;
+
+        if(_database->add(traverse->requestAdd()->database(), traverse->requestAdd()->table(), row)) {
 
         }
 

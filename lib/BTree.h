@@ -57,6 +57,7 @@ public:
     bool goToRight();
 
     Ciphertext *value();
+    unsigned long long path() { return _path; }
 
     RequestAdd *&requestAdd() { return _requestAdd; }
 };
