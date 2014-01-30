@@ -34,7 +34,7 @@ void *ZqlDaemon::getContext() {
 	return _context;
 }
 
-#define WORKER_COUNT 1
+#define WORKER_COUNT 30
 
 void ZqlDaemon::run() {
 	_context = zmq_ctx_new();

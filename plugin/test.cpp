@@ -380,35 +380,17 @@ void *client_thread(void *data) {
     t.tv_sec = 2;
     t.tv_nsec = 0;
 
-    nanosleep(&t, NULL);
-    send_request(1, "f9f5c68d8acf07a911ab0b468e663adc");
+
 
     nanosleep(&t, NULL);
-    send_request(2, "e6da1b55d13e112dd4bcb018f083860d");
 
-    nanosleep(&t, NULL);
-    send_request(3, "8854e436fef3feb984a3e8137512ae47");
 
-    nanosleep(&t, NULL);
-    send_request(4, "cb49370b3a24c0a15958d513aeb435e4");
+    for(int i = 0; i < 100000; i++) {
+        char buf[64];
+        snprintf(buf, 64, "%d", i);
+        send_request(i, buf);
+    }
 
-    nanosleep(&t, NULL);
-    send_request(5, "152a39b37eefc687edf8db069fae5795");
-
-    nanosleep(&t, NULL);
-    send_request(6, "7fba1ac807795d8660223d070663bf0e");
-
-    nanosleep(&t, NULL);
-    send_request(7, "79a8b3add824da62da4536674cb3ffb6");
-
-    nanosleep(&t, NULL);
-    send_request(8, "3a4fabf474c4c77be4c6bdd2367869f5");
-
-    nanosleep(&t, NULL);
-    send_request(9, "d1c58b1ff228ee535072a6aff4f757fd");
-
-    nanosleep(&t, NULL);
-    send_request(10, "3c1a122b061b1dfab5db35118c25eeb0");
 
     return NULL;
 }
