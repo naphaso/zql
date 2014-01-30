@@ -368,12 +368,9 @@ public:
 };
 
 void send_request(int id, const string &data) {
-    char buf[32];
-    snprintf(buf, 32, "%d", id);
-
     map<string, string> row;
     row["id"] = id;
-    row["data_ope"] = buf;
+    row["data_ope"] = data;
 
     add_executor(new InsertExecutor(new DebugInsertResultListener(), "testdatabase", "testtable2", row));
 }
