@@ -144,8 +144,8 @@ public:
 
         requestListeners[requestId] = this;
 
-        //zmq_send(socket, identity.c_str(), identity.size(), ZMQ_MORE);
-        //zmq_send(socket, identity.c_str(), 0, ZMQ_MORE);
+        zmq_send(socket, identity.c_str(), identity.size(), ZMQ_SNDMORE);
+        zmq_send(socket, identity.c_str(), 0, ZMQ_SNDMORE);
         zmq_send(socket, output.getData(), (size_t) output.getSize(), 0);
 
         printf("insert executor execution done\n");
@@ -186,8 +186,8 @@ public:
 
         delete response;
 
-        //zmq_send(_socket, _identity.c_str(), _identity.size(), ZMQ_MORE);
-        //zmq_send(_socket, _identity.c_str(), 0, ZMQ_MORE);
+        zmq_send(_socket, _identity.c_str(), _identity.size(), ZMQ_SNDMORE);
+        zmq_send(_socket, _identity.c_str(), 0, ZMQ_SNDMORE);
         zmq_send(_socket, output.getData(), (size_t) output.getSize(), 0);
         printf("insert executor response add traverse processing done.\n");
     }
@@ -373,7 +373,7 @@ void *client_thread(void *data) {
 
 int main(int argc, char **argv) {
     void *context = zmq_ctx_new();
-    void *socket = zmq_socket(context, ZMQ_REQ);
+    void *socket = zmq_socket(context, ZMQ_DEALER);
 
     zmq_connect(socket, "tcp://127.0.0.1:9990");
 
