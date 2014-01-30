@@ -5,8 +5,8 @@
 #include "ObjectParser.h"
 #include <stdlib.h>
 
-void *context;
-void *socket;
+static void *context = NULL;
+static void *socket = NULL;
 
 class InsertListener : public ObjectListener {
 
@@ -38,26 +38,38 @@ public:
         RequestAddContinue request;
         request.initRequestId() = response->initRequestId();
         request.compareResult() = 1;
-
+	
+	printf("request add continue composed\n");
+	
         RequestWrapper wrapper;
         wrapper.setId((unsigned int) rand());
         wrapper.setRequest(&request);
 
-        CborOutput output(10000);
+	printf("wrapper composed\n");
+
+        CborOutput output(100000);
         CborWriter writer(output);
         wrapper.Serialize(writer);
 
+	printf("serialized\n");
+
         zmq_send(socket, output.getData(), (size_t) output.getSize(), 0);
+
+	printf("sended\n");
 
         zmq_msg_t message;
         zmq_msg_init(&message);
         zmq_msg_recv(&message, socket, 0);
+
+	printf("received response\n");
 
         CborInput input(zmq_msg_data(&message), zmq_msg_size(&message));
         ObjectParser parser;
         parser.SetInput(input);
         parser.SetListener(*this);
         parser.Run();
+
+	printf("response parsed\n");
 
         delete response;
     }
@@ -74,11 +86,12 @@ public:
 
 int main(int argc, char **argv) {
 
-	context = zmq_ctx_new();
-	socket = zmq_socket(context, ZMQ_REQ);
+	void *context = zmq_ctx_new();
+	void *socket = zmq_socket(context, ZMQ_REQ);
+
 
 	zmq_connect(socket, "tcp://127.0.0.1:9990");
-
+	printf("zmq connect ok\n");
     /*
     RequestGet request;
     RequestWrapper wrapper;
@@ -96,20 +109,29 @@ int main(int argc, char **argv) {
     request.row()[argv[3]] = argv[4];
     request.row()[argv[5]] = argv[6];
 
+	printf("request add ok\n");
 
     RequestWrapper wrapper;
     wrapper.setId(123);
     wrapper.setRequest(&request);
 
-    CborOutput output(10000);
+	printf("request wrapper ok\n");
+
+    CborOutput output(100000);
     CborWriter writer(output);
     wrapper.Serialize(writer);
 
+	printf("serialize ok\n");
+
     zmq_send(socket, output.getData(), output.getSize(), 0);
+
+printf("send ok\n");
 
     zmq_msg_t message;
     zmq_msg_init(&message);
     zmq_msg_recv(&message, socket, 0);
+
+printf("recv ok\n");
 
     CborInput input(zmq_msg_data(&message), zmq_msg_size(&message));
     ObjectParser parser;
@@ -117,6 +139,8 @@ int main(int argc, char **argv) {
     parser.SetInput(input);
     parser.SetListener(listener);
     parser.Run();
+
+printf("parse ok\n");
 
     /*
 	//	for(int i = 0; i < 1000000; i++) {
