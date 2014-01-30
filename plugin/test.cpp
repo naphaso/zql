@@ -169,7 +169,7 @@ public:
 
         RequestAddContinue request;
         request.initRequestId() = response->initRequestId();
-        string ciphertext(response->ciphertext()->data(), response->ciphertext()->size());
+        string ciphertext((char*)response->ciphertext()->data(), response->ciphertext()->size());
         request.compareResult() = compare(decrypt(ciphertext), opeValue);
 
         unsigned int addContinueRequestId = (unsigned int) rand();
