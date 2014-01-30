@@ -12,7 +12,7 @@ BTreeNode *BTreeForest::getTree(const std::string &database, const std::string &
     map<string, BTreeNode *>::iterator it = _forest.find(id);
 
     if(it != _forest.end()) {
-        return *it;
+        return it->second;
     }
 
     return NULL;
