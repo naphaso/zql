@@ -3,7 +3,6 @@
 #include <zmq.h>
 #include "Request.h"
 #include "ObjectParser.h"
-#include "my_net.h"
 #include <stdlib.h>
 #include <string>
 #include <map>
