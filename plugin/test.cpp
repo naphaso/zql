@@ -380,17 +380,25 @@ void *client_thread(void *data) {
     t.tv_sec = 5;
     t.tv_nsec = 0;
 
+    struct timespec t2;
+    t.tv_sec = 0;
+    t.tv_nsec = 5 * 1000000;
 
 
     nanosleep(&t, NULL);
 
 
-    for(int i = 1; i < 100000; i++) {
-        printf("insert value %d\n", i);
-        char buf[64];
-        snprintf(buf, 64, "%d", i);
-        string value(buf);
-        send_request(i, value);
+    for(int i = 1; i < 100000;) {
+        if(executorQueueOffset < 900) {
+            printf("insert value %d\n", i);
+            char buf[64];
+            snprintf(buf, 64, "%d", i);
+            string value(buf);
+            send_request(i, value);
+            i++;
+        } else {
+            nanosleep(&t2, NULL);
+        }
     }
 
 
