@@ -97,7 +97,16 @@ string decrypt(const string &data) {
 }
 
 int compare(const string &a, const string &b) {
-    return a.compare(b);
+    int result = a.compare(b);
+    if(result < 0) {
+        result = -1;
+    } else if(result > 0) {
+        result = 1;
+    } else {
+        result = 0;
+    }
+    printf("compare string '%s' with string '%s', result %d", a.c_str(), b.c_str(), result);
+    return result;
 }
 
 class InsertExecutor : public ObjectListener, public RequestExecutor {
