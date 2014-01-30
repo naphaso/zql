@@ -335,8 +335,8 @@ printf("parse ok\n");
 */
 
 static pthread_mutex_t send_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
-static volatile RequestExecutor **executorQueue = new RequestExecutor*[1000];
-static volatile int executorQueueOffset = 0;
+static RequestExecutor **executorQueue = new RequestExecutor*[1000];
+static int executorQueueOffset = 0;
 
 void add_executor(RequestExecutor *executor) {
     pthread_mutex_lock(&send_queue_mutex);
