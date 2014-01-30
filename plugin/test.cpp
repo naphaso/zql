@@ -86,8 +86,8 @@ public:
 
 int main(int argc, char **argv) {
 
-	void *context = zmq_ctx_new();
-	void *socket = zmq_socket(context, ZMQ_REQ);
+	context = zmq_ctx_new();
+	socket = zmq_socket(context, ZMQ_REQ);
 
 
 	zmq_connect(socket, "tcp://127.0.0.1:9990");

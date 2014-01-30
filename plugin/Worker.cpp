@@ -65,7 +65,7 @@ void Worker::run() {
 		zmq_msg_init(&message);
 		zmq_msg_recv(&message, _socket, 0);
 
-        fprintf(stderr, "worker %d received message", _number);
+        loggerf("worker %d received message", _number);
 
         CborInput input(zmq_msg_data(&message), zmq_msg_size(&message));
         ObjectParser parser;
