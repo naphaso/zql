@@ -3,6 +3,7 @@
 #include <zmq.h>
 #include "Request.h"
 #include "ObjectParser.h"
+#include <stdlib.h>
 
 void *context;
 void *socket;
