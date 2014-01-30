@@ -155,18 +155,23 @@ void Worker::OnRequestAdd(unsigned int requestId, RequestAdd *request) {
     ResponseAddTraverse responseAddTraverse;
 
     if(!is_ope) {
+        logger("add request is not ope, just insert");
         if(_database->add(request->database(), request->table(), request->row())) {
         }
 
         wrapper.setResponse(&responseAddOk);
     } else {
+        logger("add ope request");
+
         BTreeNode *tree = BTreeForest::instance()->getTree(request->database(), request->table());
         Ciphertext *ciphertext = new Ciphertext((unsigned char *) opeValue.c_str(), opeValue.size());
         if(tree == NULL) {
-
+            logger("tree not found, creating new...");
             BTreeForest::instance()->createTree(request->database(), request->table(), ciphertext);
 
             request->row()[opeField] = formatPath(9223372036854775808ull); // 1 << 63
+
+            logger("insert new btree root ope value to table");
 
             if(_database->add(request->database(), request->table(), request->row())) {
 
@@ -174,6 +179,8 @@ void Worker::OnRequestAdd(unsigned int requestId, RequestAdd *request) {
 
             wrapper.setResponse(&responseAddOk);
         } else {
+            logger("tree exists, starting tree traverse");
+
             BTreeTraverseHolder::instance()->createTraverse(requestId, tree, ciphertext)->requestAdd() = request;
 
             responseAddTraverse.initRequestId() = requestId;
@@ -182,6 +189,7 @@ void Worker::OnRequestAdd(unsigned int requestId, RequestAdd *request) {
         }
     }
 
+    logger("serializing and send response to client...");
 
     CborOutput output(9000);
     CborWriter writer(output);
@@ -189,6 +197,7 @@ void Worker::OnRequestAdd(unsigned int requestId, RequestAdd *request) {
 
     zmq_send(_socket, output.getData(), (size_t) output.getSize(), 0);
 
+    logger("request add processing done");
 }
 
 

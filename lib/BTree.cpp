@@ -1,4 +1,5 @@
 #include "BTree.h"
+#include "log.h"
 
 using namespace std;
 
@@ -87,8 +88,10 @@ BTreeTraverse *BTreeTraverseHolder::getTraverse(unsigned int requestId) {
 }
 
 BTreeTraverse *BTreeTraverseHolder::createTraverse(unsigned int requestId, BTreeNode *root, Ciphertext *ciphertext) {
+    logger("create traverse request...");
     BTreeTraverse *traverse = new BTreeTraverse(root, ciphertext);
     _traverses[requestId] = traverse;
+    logger("traverse creating done");
     return traverse;
 }
 
