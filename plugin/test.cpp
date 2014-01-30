@@ -51,7 +51,7 @@ public:
         CborWriter writer(output);
         wrapper.Serialize(writer);
 
-	printf("serialized\n");
+	printf("serialized size %d\n", output.getSize());
 
         zmq_send(socket, output.getData(), (size_t) output.getSize(), 0);
 

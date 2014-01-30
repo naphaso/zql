@@ -56,6 +56,7 @@ int mainTest(int argc, char **argv) {
     wrapper.setResponse(&response);
 
 */
+    /*
     RequestAdd request;
     request.database() = "testdatabase";
     request.table() = "testtable";
@@ -64,7 +65,10 @@ int mainTest(int argc, char **argv) {
     request.row()["col3"] = "val3";
     request.row()["col4"] = "val4";
     request.row()["col5"] = "val5";
-
+*/
+    RequestAddContinue request;
+    request.initRequestId() = 123;
+    request.compareResult() = 1;
 
 
     RequestWrapper wrapper;
@@ -90,11 +94,13 @@ int mainTest(int argc, char **argv) {
 
 
 
-/*
+    /*
+
     CborReader reader(input);
     CborDebugListener listener;
     reader.SetListener(listener);
 	reader.Run();
+
 */
 
     ObjectParser parser;

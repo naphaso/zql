@@ -152,7 +152,7 @@ void ObjectParser::OnTag(unsigned int tag) {
         } else if(tag == TAG_REQUEST_ADD_CONTINUE) {
             state = OBJECT_PARSER_STATE_REQUEST_ADD_CONTINUE_ARRAY;
             currentObject = new RequestAddContinue();
-        } listener->OnError("unknown tag");
+        } else listener->OnError("unknown tag");
     } else if(state == OBJECT_PARSER_STATE_RESPONSE_WRAPPER_BODY) {
         if(tag == 2101) { // response get empty
             state = OBJECT_PARSER_STATE_RESPONSE_GET_EMPTY_MAP;
