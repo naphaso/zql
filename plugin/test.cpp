@@ -377,7 +377,7 @@ void send_request(int id, const string &data) {
 
 void *client_thread(void *data) {
     struct timespec t;
-    t.tv_sec = 2;
+    t.tv_sec = 5;
     t.tv_nsec = 0;
 
 
@@ -385,10 +385,12 @@ void *client_thread(void *data) {
     nanosleep(&t, NULL);
 
 
-    for(int i = 0; i < 100000; i++) {
+    for(int i = 1; i < 100000; i++) {
+        printf("insert value %d\n", i);
         char buf[64];
         snprintf(buf, 64, "%d", i);
-        send_request(i, buf);
+        string value(buf);
+        send_request(i, value);
     }
 
 
